@@ -1,103 +1,328 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { ArrowRight, CheckCircle, Star, Award, Clock } from 'lucide-react';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const services = [
+    {
+      name: 'T-Shirt Printing',
+      description: 'High-quality custom t-shirt printing with various techniques',
+      icon: '👕',
+      href: '/services/t-shirt'
+    },
+    {
+      name: 'Glass Printing',
+      description: 'Professional glass printing for windows, doors, and displays',
+      icon: '🪟',
+      href: '/services/glass'
+    },
+    {
+      name: 'Calendar Printing',
+      description: 'Custom calendar printing for businesses and organizations',
+      icon: '📅',
+      href: '/services/calendar'
+    },
+    {
+      name: 'ID Card Printing',
+      description: 'Professional ID card printing with security features',
+      icon: '🆔',
+      href: '/services/id-card'
+    },
+    {
+      name: 'Ribbon Printing',
+      description: 'Custom ribbon printing for events and celebrations',
+      icon: '🎀',
+      href: '/services/ribbon'
+    },
+    {
+      name: 'Sticker Printing',
+      description: 'Durable sticker printing for branding and decoration',
+      icon: '🏷️',
+      href: '/services/sticker'
+    },
+    {
+      name: 'Visiting Card',
+      description: 'Professional business card printing services',
+      icon: '💼',
+      href: '/services/visiting-card'
+    },
+    {
+      name: 'Flyer & Brochure',
+      description: 'Marketing materials and promotional printing',
+      icon: '📄',
+      href: '/services/flyer-brochure'
+    }
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const testimonials = [
+    {
+      name: 'Lia BD',
+      company: 'Satisfied Customer',
+      content: 'আলহামদুলিল্লাহ, খুব সুন্দর সার্ভিস । কথা ও কাজে 100% মিল আছে।',
+      rating: 5
+    },
+    {
+      name: 'Prakash Chakma',
+      company: 'Happy Customer',
+      content: 'খুব ভালো সার্ভিস। আগামীর জন্য শুভ কামনা রইলো আপনাদের প্রতি।',
+      rating: 5
+    },
+    {
+      name: 'Tahmina Chowdhury',
+      company: 'Quality Customer',
+      content: 'I have not found such good service and quality for printing anywhere. Only here I found the quality and service to my heart. 💙',
+      rating: 5
+    },
+    {
+      name: 'Zahid Sazzad',
+      company: 'Madrasa Customer',
+      content: 'আলহামদুলিল্লাহ খুবই চমৎকার ডিজাইন করেছে আমার মাদ্রাসার ছাত্র ছাত্রী দের আইডি কার্ডের, সঠিক সময়ে হতে পেয়ে আমি খুব খুশি, আল্লাহ তাকে তার নেক আশাগুলা পুরণ করাক।',
+      rating: 5
+    },
+    {
+      name: 'Rddwan Rahman',
+      company: 'Design Customer',
+      content: 'আপনার কাজের মান অনেক ভালো। অসাধারণ একটা ডিজাইন দিয়েছেন তার জন্য ধন্যবাদ। সময় মত ডেলিভারি দেওয়ার জন্য ধন্যবাদ।',
+      rating: 5
+    },
+    {
+      name: 'Syed Hasan Shahriar Rofi',
+      company: 'Calendar Customer',
+      content: 'সাশ্রয়ী মূল্যে ভাল ক্যালেন্ডার বা যে কোন প্রিন্টিং এর জন্য নিঃসন্দেহে নির্ভরযোগ্য একটি প্রতিষ্ঠান।',
+      rating: 5
+    }
+  ];
+
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-green-600 via-green-700 to-green-800 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <h1 className="text-4xl md:text-6xl font-bold font-serif leading-tight">
+                Professional Printing Services in Bangladesh
+              </h1>
+              <p className="text-xl text-green-100 leading-relaxed">
+                From t-shirts to business cards, we deliver high-quality printing solutions 
+                with fast turnaround times and competitive prices. Your trusted printing partner.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="tel:+8801861623213"
+                  className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-50 transition-colors duration-200 flex items-center justify-center group"
+                >
+                  +880 1861 623213
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="/services"
+                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-green-600 transition-colors duration-200"
+                >
+                  View Services
+                </Link>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 space-y-6">
+                <h3 className="text-2xl font-semibold">Why Choose Us?</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                    <span>High-quality materials</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                    <span>Fast turnaround times</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                    <span>Competitive pricing</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                    <span>Professional customer service</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+
+      {/* Services Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
+              Our Printing Services
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We offer a comprehensive range of printing services to meet all your business and personal needs
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {services.map((service, index) => (
+              <Link
+                key={index}
+                href={service.href}
+                className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200"
+              >
+                <div className="text-4xl mb-4">{service.icon}</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
+                  {service.name}
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {service.description}
+                </p>
+                <div className="mt-4 text-green-600 font-medium group-hover:translate-x-1 transition-transform">
+                  Learn More →
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 font-serif">
+                About Maisha Printing
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                With over 5 years of experience in the printing industry, Maisha Printing has established 
+                itself as a trusted partner for businesses and individuals across Bangladesh. We combine 
+                traditional craftsmanship with modern technology to deliver exceptional results.
+              </p>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                Our commitment to quality, customer satisfaction, and timely delivery has made us the 
+                preferred choice for printing services in Dhaka and surrounding areas.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex items-center space-x-3">
+                  <Award className="h-8 w-8 text-green-600" />
+                  <div>
+                    <div className="font-semibold text-gray-900">Quality Assured</div>
+                    <div className="text-sm text-gray-600">Premium materials</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Clock className="h-8 w-8 text-green-600" />
+                  <div>
+                    <div className="font-semibold text-gray-900">Fast Delivery</div>
+                    <div className="text-sm text-gray-600">Quick turnaround</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Our Process</h3>
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Consultation</h4>
+                    <p className="text-gray-600 text-sm">Discuss your requirements and get expert advice</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Design & Quote</h4>
+                    <p className="text-gray-600 text-sm">Create mockups and provide competitive pricing</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Production</h4>
+                    <p className="text-gray-600 text-sm">High-quality printing with attention to detail</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                    4
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Delivery</h4>
+                    <p className="text-gray-600 text-sm">Fast and secure delivery to your location</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
+              What Our Customers Say
+            </h2>
+            <p className="text-xl text-gray-600">
+              Don&apos;t just take our word for it - hear from our satisfied customers
+            </p>
+          </div>
+          
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div className="flex items-center mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-gray-600 mb-4 leading-relaxed">
+                      &ldquo;{testimonial.content}&rdquo;
+                    </p>
+                    <div>
+                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                      <div className="text-sm text-gray-500">{testimonial.company}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-green-600 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-serif">
+            Ready to Start Your Printing Project?
+          </h2>
+          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+            Get a free quote today and experience the difference of professional printing services
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="tel:+8801861623213"
+              className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-50 transition-colors duration-200"
+            >
+              +880 1861 623213
+            </Link>
+            <Link
+              href="tel:+8801861623213"
+              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-green-600 transition-colors duration-200"
+            >
+              Call Now: +880 1861 623213
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

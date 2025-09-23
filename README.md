@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maisha Printing - Professional Printing Services Website
 
-## Getting Started
+A modern, responsive website for Maisha Printing, a professional printing service provider in Bangladesh. Built with Next.js 15, React, and Tailwind CSS.
 
-First, run the development server:
+## 🌟 Features
 
+- **Responsive Design** - Works perfectly on all devices (mobile, tablet, desktop)
+- **Modern UI/UX** - Clean, professional design with smooth animations
+- **Fast Performance** - Optimized for speed and SEO
+- **WhatsApp Integration** - Direct WhatsApp chat widget for customer inquiries
+- **Multi-language Support** - Bengali and English content
+- **SEO Optimized** - Proper meta tags and structured data
+- **Contact Integration** - Phone, email, and address information
+- **Service Pages** - Detailed pages for each printing service
+
+## 🚀 Services Offered
+
+- T-Shirt Printing
+- Glass Printing
+- Calendar Printing
+- ID Card Printing
+- Ribbon Printing
+- Sticker Printing
+- Visiting Cards
+- Flyer & Brochure Printing
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v3
+- **Icons**: Lucide React
+- **Fonts**: Inter, Roboto (Google Fonts)
+- **Deployment**: Vercel (recommended)
+
+## 📱 Contact Information
+
+- **Phone**: +880 1861 623213
+- **Email**: maishaprintingbd@gmail.com
+- **Address**: 224/1, Fakirapool, (2nd Floor), 1 No Lane, Motijheel, Dhaka-1000, Bangladesh
+- **Facebook**: [Maisha Printing BD](https://www.facebook.com/maishaprintingbd)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/maisha-printing-website.git
+cd maisha-printing-website
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 🌐 Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Vercel (Recommended)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push your code to GitHub
+2. Connect your repository to [Vercel](https://vercel.com)
+3. Deploy automatically on every push
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Other Platforms
 
-## Deploy on Vercel
+The website can be deployed to any platform that supports Next.js:
+- Netlify
+- AWS Amplify
+- Railway
+- DigitalOcean App Platform
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── about/             # About page
+│   ├── contact/           # Contact page
+│   ├── services/          # Services pages
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   ├── not-found.tsx      # 404 page
+│   └── page.tsx           # Homepage
+├── components/            # Reusable components
+│   ├── Footer.tsx         # Footer component
+│   ├── Header.tsx         # Header component
+│   └── WhatsAppWidget.tsx # WhatsApp chat widget
+└── public/               # Static assets
+```
+
+## 🎨 Customization
+
+### Colors
+The website uses a green color scheme. To change colors, update the Tailwind config in `tailwind.config.js` and CSS variables in `src/app/globals.css`.
+
+### Content
+- Update contact information in `src/components/Footer.tsx` and `src/app/contact/page.tsx`
+- Modify testimonials in `src/app/page.tsx`
+- Update services in respective service pages
+
+### WhatsApp Widget
+Configure the WhatsApp number in `src/components/WhatsAppWidget.tsx` (line 12).
+
+## 📄 License
+
+This project is proprietary software developed for Maisha Printing.
+
+## 👨‍💻 Developer
+
+**Website developed by [Pixel Forge](https://www.pixelforgebd.com)**
+
+For website development services, contact Pixel Forge.
+
+## 📞 Support
+
+For any issues or questions about the website, please contact:
+- **Email**: maishaprintingbd@gmail.com
+- **Phone**: +880 1861 623213
+
+---
+
+© 2024 Maisha Printing. All rights reserved.
