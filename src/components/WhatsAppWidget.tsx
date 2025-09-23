@@ -37,15 +37,15 @@ export default function WhatsAppWidget() {
   return (
     <>
       {/* WhatsApp Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 group"
+          className="bg-green-500 hover:bg-green-600 text-white p-3 sm:p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 group"
           aria-label="Open WhatsApp chat"
         >
-          <MessageCircle className="h-6 w-6" />
+          {isOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />}
           {!isOpen && (
-            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+            <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
               1
             </div>
           )}
@@ -54,23 +54,23 @@ export default function WhatsAppWidget() {
 
       {/* Chat Widget */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="fixed bottom-20 right-2 sm:bottom-24 sm:right-6 z-50 w-80 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
           {/* Header */}
           <div className="bg-green-500 text-white p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <span className="text-green-500 font-bold text-lg">M</span>
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <span className="text-green-500 font-bold text-sm">M</span>
               </div>
               <div>
-                <h3 className="font-semibold">Maisha Printing</h3>
-                <p className="text-green-100 text-sm">Online now</p>
+                <h3 className="font-semibold text-sm">Maisha Printing</h3>
+                <p className="text-green-100 text-xs">Online now</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
               className="text-white hover:text-green-200 transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 

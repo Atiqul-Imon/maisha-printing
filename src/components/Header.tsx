@@ -26,20 +26,20 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50">
+    <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
 
       {/* Main navigation */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
+            <Link href="/" className="flex items-center space-x-2 md:space-x-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl md:text-2xl">M</span>
               </div>
-              <div>
-                <h1 className="text-2xl font-serif font-bold text-gray-900">Maisha Printing</h1>
-                <p className="text-xs text-gray-600">Professional Printing Services</p>
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Maisha Printing</h1>
+                <p className="text-xs md:text-sm text-gray-600 font-medium">Professional Printing Services</p>
               </div>
             </Link>
           </div>
@@ -93,7 +93,8 @@ export default function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-green-600 p-2"
+              className="text-gray-700 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -103,33 +104,44 @@ export default function Header() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 rounded-lg mt-2">
+            <div className="px-4 pt-4 pb-6 space-y-2 bg-white border-t border-gray-100 shadow-lg">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium"
+                  className="text-gray-700 hover:text-green-600 block px-4 py-3 text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              
+
               {/* Mobile Services */}
-              <div className="pt-2">
-                <div className="text-gray-700 px-3 py-2 text-base font-medium">Services</div>
-                <div className="pl-4 space-y-1">
+              <div className="pt-4 border-t border-gray-100">
+                <div className="text-gray-900 px-4 py-2 text-base font-bold mb-2">Our Services</div>
+                <div className="space-y-1">
                   {services.map((service) => (
                     <Link
                       key={service.name}
                       href={service.href}
-                      className="text-gray-600 hover:text-green-600 block px-3 py-2 text-sm"
+                      className="text-gray-600 hover:text-green-600 block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {service.name}
                     </Link>
                   ))}
                 </div>
+              </div>
+
+              {/* Mobile CTA */}
+              <div className="pt-4 border-t border-gray-100">
+                <Link
+                  href="/contact"
+                  className="block w-full bg-green-600 text-white px-4 py-3 rounded-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Get Quote
+                </Link>
               </div>
             </div>
           </div>

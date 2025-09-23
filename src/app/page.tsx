@@ -98,50 +98,50 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-600 via-green-700 to-green-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <h1 className="text-4xl md:text-6xl font-bold font-serif leading-tight">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                 Professional Printing Services in Bangladesh
               </h1>
-              <p className="text-xl text-green-100 leading-relaxed">
+              <p className="text-lg sm:text-xl text-green-100 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                 From t-shirts to business cards, we deliver high-quality printing solutions 
                 with fast turnaround times and competitive prices. Your trusted printing partner.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   href="tel:+8801861623213"
-                  className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-50 transition-colors duration-200 flex items-center justify-center group"
+                  className="bg-white text-green-600 px-6 py-4 rounded-xl font-semibold text-lg hover:bg-green-50 transition-all duration-200 flex items-center justify-center group shadow-lg hover:shadow-xl"
                 >
                   +880 1861 623213
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   href="/services"
-                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-green-600 transition-colors duration-200"
+                  className="border-2 border-white text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-green-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   View Services
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 space-y-6">
-                <h3 className="text-2xl font-semibold">Why Choose Us?</h3>
+            <div className="relative mt-8 lg:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 space-y-6 border border-white/20">
+                <h3 className="text-xl lg:text-2xl font-semibold text-center lg:text-left">Why Choose Us?</h3>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                    <span>High-quality materials</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
+                    <span className="text-sm lg:text-base">High-quality materials</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                    <span>Fast turnaround times</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
+                    <span className="text-sm lg:text-base">Fast turnaround times</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                    <span>Competitive pricing</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
+                    <span className="text-sm lg:text-base">Competitive pricing</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                    <span>Professional customer service</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
+                    <span className="text-sm lg:text-base">Professional customer service</span>
                   </div>
                 </div>
               </div>
@@ -152,32 +152,32 @@ export default function Home() {
 
 
       {/* Services Section */}
-      <section className="py-20">
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Our Printing Services
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               We offer a comprehensive range of printing services to meet all your business and personal needs
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {services.map((service, index) => (
               <Link
                 key={index}
                 href={service.href}
-                className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200"
+                className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200 hover:-translate-y-1"
               >
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
+                <div className="text-3xl lg:text-4xl mb-4">{service.icon}</div>
+                <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
                   {service.name}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-gray-600 text-sm lg:text-base leading-relaxed mb-4">
                   {service.description}
                 </p>
-                <div className="mt-4 text-green-600 font-medium group-hover:translate-x-1 transition-transform">
+                <div className="text-green-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
                   Learn More →
                 </div>
               </Link>
@@ -266,59 +266,59 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20">
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               What Our Customers Say
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
               Don&apos;t just take our word for it - hear from our satisfied customers
             </p>
           </div>
           
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {testimonials.map((testimonial, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                    <div className="flex items-center mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      &ldquo;{testimonial.content}&rdquo;
-                    </p>
-                    <div>
-                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-sm text-gray-500">{testimonial.company}</div>
-                    </div>
-                  </div>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-4 leading-relaxed text-sm lg:text-base">
+                  &ldquo;{testimonial.content}&rdquo;
+                </p>
+                <div>
+                  <div className="font-semibold text-gray-900 text-sm lg:text-base">{testimonial.name}</div>
+                  <div className="text-xs lg:text-sm text-gray-500">{testimonial.company}</div>
+                </div>
               </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-green-600 py-20">
+      <section className="bg-gradient-to-br from-green-600 via-green-700 to-green-800 py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-serif">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
             Ready to Start Your Printing Project?
           </h2>
-          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-green-100 mb-8 max-w-2xl mx-auto leading-relaxed">
             Get a free quote today and experience the difference of professional printing services
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <Link
               href="tel:+8801861623213"
-              className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-50 transition-colors duration-200"
+              className="bg-white text-green-600 px-6 py-4 rounded-xl font-semibold text-lg hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               +880 1861 623213
             </Link>
             <Link
               href="tel:+8801861623213"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-green-600 transition-colors duration-200"
+              className="border-2 border-white text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-green-600 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              Call Now: +880 1861 623213
+              Call Now
             </Link>
           </div>
         </div>
