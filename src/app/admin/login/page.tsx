@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
@@ -15,12 +15,17 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (only after status is confirmed)
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/admin');
+      // Small delay to ensure session is fully established
+      const timer = setTimeout(() => {
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+        window.location.href = callbackUrl;
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [status, router]);
+  }, [status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,30 +33,70 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log('Attempting login with email:', email);
+      
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
+      console.log('Login result:', result);
+
       if (result?.error) {
-        setError(result.error || 'Invalid credentials');
+        const errorMessage = result.error || 'Invalid credentials';
+        setError(errorMessage);
+        console.error('Login error:', errorMessage);
+        setLoading(false);
       } else if (result?.ok) {
-        router.push('/admin');
-        router.refresh();
+        console.log('Login successful, waiting for session to be established...');
+        // Wait a moment for the session cookie to be set, then check session
+        setTimeout(async () => {
+          try {
+            const session = await getSession();
+            console.log('Session after login:', session);
+            if (session) {
+              // Session is established, redirect
+              const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+              window.location.href = callbackUrl;
+            } else {
+              // Session not established yet, wait a bit more and retry
+              console.log('Session not established yet, retrying...');
+              setTimeout(() => {
+                window.location.href = '/admin';
+              }, 500);
+            }
+          } catch (err) {
+            console.error('Error checking session:', err);
+            // Fallback: redirect anyway after a delay
+            setTimeout(() => {
+              window.location.href = '/admin';
+            }, 500);
+          }
+        }, 200);
+      } else {
+        setError('Login failed. Please check your credentials.');
+        console.error('Login failed - no error or success status');
+        setLoading(false);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
-      console.error('Login error:', err);
-    } finally {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
+      console.error('Login exception:', err);
       setLoading(false);
     }
   };
 
-  if (status === 'loading' || status === 'authenticated') {
+  // Show loading while checking session or after successful login
+  if (status === 'loading' || (status === 'authenticated' && !error)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 text-green-600 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">
+            {status === 'authenticated' ? 'Redirecting to admin panel...' : 'Loading...'}
+          </p>
+        </div>
       </div>
     );
   }

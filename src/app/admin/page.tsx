@@ -18,9 +18,10 @@ export default function AdminPanel() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/admin/login');
+      // Use window.location for a hard redirect to avoid loops
+      window.location.href = '/admin/login';
     }
-  }, [status, router]);
+  }, [status]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -193,21 +194,40 @@ export default function AdminPanel() {
     setFormData({ ...formData, images: newImages });
   };
 
-  // Show loading state
-  if (status === 'loading' || loading) {
+  // Show loading state only while checking authentication
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
-  // Show unauthorized if not authenticated
+  // Show loading while fetching products (only if authenticated)
+  if (status === 'authenticated' && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show unauthorized if not authenticated (redirect will happen via useEffect)
   if (status === 'unauthenticated') {
-    return null; // Will redirect via useEffect
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

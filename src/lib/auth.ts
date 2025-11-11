@@ -13,36 +13,51 @@ export const authOptions: NextAuthConfig = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.error('Authorize: Missing email or password');
           throw new Error('Email and password required');
         }
 
         const email = credentials.email as string;
         const password = credentials.password as string;
 
+        console.log('Authorize: Attempting authentication for:', email);
+
         try {
           const collection = await getUsersCollection();
+          
           if (!collection) {
+            console.warn('MongoDB not configured, using fallback authentication');
             // MongoDB not configured, use default admin
             if (
-              email === 'admin@maishaprinting.com' &&
+              (email === 'admin@maishaprinting.com' || email === 'admin@maishaprintingbd.com') &&
               password === 'admin123' // Change this in production!
             ) {
+              console.log('Fallback authentication successful');
               return {
                 id: '1',
-                email: 'admin@maishaprinting.com',
+                email: email,
                 name: 'Admin',
                 role: 'admin',
               };
             }
-            throw new Error('Authentication failed');
+            console.error('Fallback authentication failed');
+            throw new Error('Authentication failed - MongoDB not configured and fallback credentials invalid');
           }
 
+          console.log('MongoDB collection found, querying user...');
           const user = await collection.findOne({ email }) as { password: string; email: string; name?: string; role?: string; _id: { toString: () => string } } | null;
 
-          if (!user || !user.password) {
-            throw new Error('Invalid credentials');
+          if (!user) {
+            console.error('User not found in database:', email);
+            throw new Error('Invalid credentials - User not found');
           }
 
+          if (!user.password) {
+            console.error('User found but no password set:', email);
+            throw new Error('Invalid credentials - No password set');
+          }
+
+          console.log('User found, verifying password...');
           // Verify password
           const isValid = await bcrypt.compare(
             password,
@@ -50,17 +65,22 @@ export const authOptions: NextAuthConfig = {
           );
 
           if (!isValid) {
-            throw new Error('Invalid credentials');
+            console.error('Password verification failed for:', email);
+            throw new Error('Invalid credentials - Password incorrect');
           }
 
+          console.log('Authentication successful for:', email);
           return {
             id: user._id.toString(),
             email: user.email,
-            name: user.name,
+            name: user.name || 'Admin',
             role: user.role || 'admin',
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error('Auth error details:', error);
+          if (error instanceof Error) {
+            throw error;
+          }
           throw new Error('Authentication failed');
         }
       },

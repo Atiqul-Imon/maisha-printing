@@ -26,40 +26,59 @@ async function createAdminUser() {
     const db = client.db('maisha_printing');
     const collection = db.collection('users');
 
-    // Default admin credentials (CHANGE THESE IN PRODUCTION!)
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@maishaprinting.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123'; // CHANGE THIS!
+    // Default admin credentials (from ADMIN_CREDENTIALS.md)
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@maishaprintingbd.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'MaishaAdmin@2024!';
 
-    console.log(`Creating admin user: ${adminEmail}`);
+    console.log(`Creating/updating admin user: ${adminEmail}`);
 
     // Check if user already exists
     const existingUser = await collection.findOne({ email: adminEmail });
-    if (existingUser) {
-      console.log('Admin user already exists. To reset password, delete the user first.');
-      console.log('Or update the password manually in MongoDB.');
-      return;
-    }
-
+    
     // Hash password
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    // Create admin user
-    const result = await collection.insertOne({
-      email: adminEmail,
-      password: hashedPassword,
-      name: 'Administrator',
-      role: 'admin',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    console.log('\n✅ Admin user created successfully!');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('Email:', adminEmail);
-    console.log('Password:', adminPassword);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('\n⚠️  IMPORTANT: Change the default password after first login!');
-    console.log('User ID:', result.insertedId);
+    if (existingUser) {
+      console.log('⚠️  Admin user already exists. Updating password...');
+      // Update existing user
+      await collection.updateOne(
+        { email: adminEmail },
+        {
+          $set: {
+            password: hashedPassword,
+            name: 'Administrator',
+            role: 'admin',
+            updatedAt: new Date(),
+          },
+        }
+      );
+      console.log('✅ Admin user password updated!');
+      
+      console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('Email:', adminEmail);
+      console.log('Password:', adminPassword);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('\n⚠️  Password has been updated for existing user.');
+      console.log('User ID:', existingUser._id);
+    } else {
+      // Create new admin user
+      const result = await collection.insertOne({
+        email: adminEmail,
+        password: hashedPassword,
+        name: 'Administrator',
+        role: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      console.log('✅ Admin user created!');
+      
+      console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('Email:', adminEmail);
+      console.log('Password:', adminPassword);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('\n⚠️  IMPORTANT: Change the default password after first login!');
+      console.log('User ID:', result.insertedId);
+    }
   } catch (error) {
     console.error('Error creating admin user:', error);
     process.exit(1);
