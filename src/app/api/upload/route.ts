@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSessionFromCookie } from '@/lib/auth-custom';
 
 const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/dtqqmnmqo';
 const IMAGEKIT_PRIVATE_KEY = 'CELMONWRfc5WrCRuwKsW3raUqw=';
 
 /**
  * Upload image to ImageKit using private key authentication
+ * Requires authentication
  */
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getSessionFromCookie();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: 'Your account cannot be authenticated.' },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const folder = formData.get('folder') as string || 'products';

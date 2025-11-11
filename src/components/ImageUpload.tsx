@@ -61,6 +61,7 @@ export default function ImageUpload({ onUploadComplete, existingUrl, onRemove }:
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Ensure cookies are sent with the request
       });
 
       const result = await response.json();

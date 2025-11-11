@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductsCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { getSessionFromCookie } from '@/lib/auth-custom';
 
 // GET - Fetch single product by ID
 export async function GET(
@@ -49,6 +50,15 @@ export async function PUT(
 ) {
   const params = await context.params;
   try {
+    // Check authentication
+    const session = await getSessionFromCookie();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const collection = await getProductsCollection();
     if (!collection) {
       return NextResponse.json(
@@ -129,6 +139,15 @@ export async function DELETE(
 ) {
   const params = await context.params;
   try {
+    // Check authentication
+    const session = await getSessionFromCookie();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const collection = await getProductsCollection();
     if (!collection) {
       return NextResponse.json(

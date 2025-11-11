@@ -14,7 +14,9 @@ export default function LoginPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch('/api/auth/session');
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
         const data = await response.json();
 
         if (data.user) {
@@ -44,6 +46,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 

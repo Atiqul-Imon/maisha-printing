@@ -26,7 +26,9 @@ export default function AdminPanel() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/session');
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
         const data = await response.json();
 
         if (!data.user) {
@@ -49,7 +51,10 @@ export default function AdminPanel() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include',
+      });
       window.location.href = '/admin/login';
     } catch (err) {
       console.error('Logout error:', err);
@@ -75,7 +80,9 @@ export default function AdminPanel() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch('/api/products', {
+        credentials: 'include',
+      });
       const result = await response.json();
       if (result.success) {
         // Sort products by order if available, then by createdAt
@@ -107,6 +114,7 @@ export default function AdminPanel() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           products: reorderedProducts.map((p, index) => ({
             id: p.id,
@@ -148,6 +156,7 @@ export default function AdminPanel() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -188,6 +197,7 @@ export default function AdminPanel() {
       try {
         const response = await fetch(`/api/products/${productId}`, {
           method: 'DELETE',
+          credentials: 'include',
         });
 
         const result = await response.json();

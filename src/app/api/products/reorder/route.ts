@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductsCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { getSessionFromCookie } from '@/lib/auth-custom';
 
 // PUT - Update product orders in bulk
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getSessionFromCookie();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const collection = await getProductsCollection();
     if (!collection) {
       return NextResponse.json(
