@@ -1,57 +1,11 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle, Star, Award, Clock } from 'lucide-react';
+import { getAllProducts, getFeaturedProducts } from '@/lib/products-server';
+import ProductCard from '@/components/ProductCard';
 
-export default function Home() {
-  const services = [
-    {
-      name: 'T-Shirt Printing',
-      description: 'High-quality custom t-shirt printing with various techniques',
-      icon: '👕',
-      href: '/services/t-shirt'
-    },
-    {
-      name: 'Glass Printing',
-      description: 'Professional glass printing for windows, doors, and displays',
-      icon: '🪟',
-      href: '/services/glass'
-    },
-    {
-      name: 'Calendar Printing',
-      description: 'Custom calendar printing for businesses and organizations',
-      icon: '📅',
-      href: '/services/calendar'
-    },
-    {
-      name: 'ID Card Printing',
-      description: 'Professional ID card printing with security features',
-      icon: '🆔',
-      href: '/services/id-card'
-    },
-    {
-      name: 'Ribbon Printing',
-      description: 'Custom ribbon printing for events and celebrations',
-      icon: '🎀',
-      href: '/services/ribbon'
-    },
-    {
-      name: 'Sticker Printing',
-      description: 'Durable sticker printing for branding and decoration',
-      icon: '🏷️',
-      href: '/services/sticker'
-    },
-    {
-      name: 'Visiting Card',
-      description: 'Professional business card printing services',
-      icon: '💼',
-      href: '/services/visiting-card'
-    },
-    {
-      name: 'Flyer & Brochure',
-      description: 'Marketing materials and promotional printing',
-      icon: '📄',
-      href: '/services/flyer-brochure'
-    }
-  ];
+export default async function Home() {
+  const featuredProducts = await getFeaturedProducts();
+  const allProducts = await getAllProducts();
 
   const testimonials = [
     {
@@ -151,43 +105,48 @@ export default function Home() {
       </section>
 
 
-      {/* Services Section */}
+      {/* Featured Products/Services Section */}
       <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Our Printing Services
+              Our Featured Services
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              We offer a comprehensive range of printing services to meet all your business and personal needs
+              Explore our premium printing services designed to meet all your business and personal needs
             </p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {services.map((service, index) => (
-              <Link
-                key={index}
-                href={service.href}
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200 hover:-translate-y-1"
-              >
-                <div className="text-3xl lg:text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
-                  {service.name}
-                </h3>
-                <p className="text-gray-600 text-sm lg:text-base leading-relaxed mb-4">
-                  {service.description}
-                </p>
-                <div className="text-green-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
-                  Learn More →
-                </div>
-              </Link>
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* All Products/Services Section */}
+      <section className="bg-gray-50 py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              All Our Services & Products
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Comprehensive range of printing solutions for every need
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+            {allProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section className="bg-gray-50 py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
