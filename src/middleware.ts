@@ -19,13 +19,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Only redirect authenticated users away from login if they have a valid token
-  // This prevents redirect loops
+  // Redirect authenticated users away from login page
+  // But only if we have a valid token (prevents loops)
   if (pathname === '/admin/login' && token) {
-    // Check if there's a callbackUrl, if so redirect there, otherwise to /admin
     const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
-    const redirectUrl = callbackUrl || '/admin';
-    return NextResponse.redirect(new URL(redirectUrl, request.url));
+    // Validate callbackUrl to prevent open redirects
+    const redirectUrl = callbackUrl && callbackUrl.startsWith('/admin') 
+      ? callbackUrl 
+      : '/admin';
+    const redirect = new URL(redirectUrl, request.url);
+    // Use 307 Temporary Redirect to ensure method is preserved
+    return NextResponse.redirect(redirect, 307);
   }
 
   return NextResponse.next();

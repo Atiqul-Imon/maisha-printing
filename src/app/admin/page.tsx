@@ -18,8 +18,11 @@ export default function AdminPanel() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      // Use window.location for a hard redirect to avoid loops
-      window.location.href = '/admin/login';
+      // Prevent redirect loop - only redirect if we're not already on login page
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes('/admin/login')) {
+        window.location.replace('/admin/login');
+      }
     }
   }, [status]);
 

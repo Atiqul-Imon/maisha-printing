@@ -9,23 +9,38 @@ import { Loader2, Lock, Mail } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
-  // Redirect if already logged in (only after status is confirmed)
+  // Add timeout for session check to prevent infinite loading
   useEffect(() => {
-    if (status === 'authenticated') {
-      // Small delay to ensure session is fully established
+    const timer = setTimeout(() => {
+      if (status === 'loading') {
+        console.warn('Session check timed out after 5 seconds');
+        setSessionChecked(true);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  // Redirect if already logged in - but let middleware handle it primarily
+  // Only redirect client-side if middleware didn't catch it
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+      // Small delay to let middleware handle it first
       const timer = setTimeout(() => {
-        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
-        window.location.href = callbackUrl;
+        console.log('Client-side redirect to:', callbackUrl);
+        window.location.replace(callbackUrl);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [status]);
+  }, [status, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,31 +64,15 @@ export default function LoginPage() {
         console.error('Login error:', errorMessage);
         setLoading(false);
       } else if (result?.ok) {
-        console.log('Login successful, waiting for session to be established...');
-        // Wait a moment for the session cookie to be set, then check session
-        setTimeout(async () => {
-          try {
-            const session = await getSession();
-            console.log('Session after login:', session);
-            if (session) {
-              // Session is established, redirect
-              const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
-              window.location.href = callbackUrl;
-            } else {
-              // Session not established yet, wait a bit more and retry
-              console.log('Session not established yet, retrying...');
-              setTimeout(() => {
-                window.location.href = '/admin';
-              }, 500);
-            }
-          } catch (err) {
-            console.error('Error checking session:', err);
-            // Fallback: redirect anyway after a delay
-            setTimeout(() => {
-              window.location.href = '/admin';
-            }, 500);
-          }
-        }, 200);
+        console.log('Login successful, redirecting...');
+        // Login was successful, the session cookie should be set
+        // Let the useEffect handle the redirect when status changes to 'authenticated'
+        // Or redirect directly after a short delay
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+        // Use a full page reload to ensure session is read
+        setTimeout(() => {
+          window.location.replace(callbackUrl);
+        }, 300);
       } else {
         setError('Login failed. Please check your credentials.');
         console.error('Login failed - no error or success status');
@@ -87,15 +86,42 @@ export default function LoginPage() {
     }
   };
 
-  // Show loading while checking session or after successful login
-  if (status === 'loading' || (status === 'authenticated' && !error)) {
+  // Show loading after successful login (while redirecting)
+  if (loading && !error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">
-            {status === 'authenticated' ? 'Redirecting to admin panel...' : 'Loading...'}
-          </p>
+          <p className="mt-4 text-gray-600">Logging in...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, show redirecting (middleware should handle this, but show UI just in case)
+  if (status === 'authenticated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">Redirecting to admin panel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If session check is taking too long, show the form anyway
+  // This prevents infinite loading if session endpoint is slow/failing
+  if (status === 'loading' && sessionChecked) {
+    console.log('Session check timed out, showing login form anyway');
+    // Continue to show the form below
+  } else if (status === 'loading' && !sessionChecked) {
+    // Show loading only for the first 5 seconds
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
