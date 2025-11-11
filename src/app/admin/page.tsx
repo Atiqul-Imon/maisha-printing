@@ -2,33 +2,59 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
 import { Product } from '@/types/product';
 import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical } from 'lucide-react';
 import ImageKitImage from '@/components/ImageKitImage';
 import ImageUpload from '@/components/ImageUpload';
 import DraggableProductList from '@/components/DraggableProductList';
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+}
+
 export default function AdminPanel() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Redirect to login if not authenticated
+  // Check authentication on mount
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      // Prevent redirect loop - only redirect if we're not already on login page
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes('/admin/login')) {
-        window.location.replace('/admin/login');
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (!data.user) {
+          // Not authenticated, redirect to login
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        setUser(data.user);
+        setCheckingAuth(false);
+      } catch (err) {
+        console.error('Auth check error:', err);
+        window.location.href = '/admin/login';
       }
-    }
-  }, [status]);
+    };
+
+    checkAuth();
+  }, []);
 
   // Handle logout
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/admin/login', redirect: true });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/admin/login';
+    } catch (err) {
+      console.error('Logout error:', err);
+      window.location.href = '/admin/login';
+    }
   };
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -197,32 +223,22 @@ export default function AdminPanel() {
     setFormData({ ...formData, images: newImages });
   };
 
-  // Show loading state only while checking authentication
-  if (status === 'loading') {
+  // Show loading state while checking authentication or loading products
+  if (checkingAuth || (loading && products.length === 0 && !checkingAuth)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Checking authentication...</p>
+          <p className="mt-4 text-gray-600">
+            {checkingAuth ? 'Checking authentication...' : 'Loading products...'}
+          </p>
         </div>
       </div>
     );
   }
 
-  // Show loading while fetching products (only if authenticated)
-  if (status === 'authenticated' && loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show unauthorized if not authenticated (redirect will happen via useEffect)
-  if (status === 'unauthenticated') {
+  // If not authenticated, show loading (redirect should happen)
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -245,12 +261,12 @@ export default function AdminPanel() {
             </div>
             <div className="flex items-center space-x-4">
               {/* User Info */}
-              {session?.user && (
+              {user && (
                 <div className="flex items-center space-x-3 px-4 py-2 bg-gray-50 rounded-lg">
                   <User className="h-5 w-5 text-gray-600" />
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{session.user.name || session.user.email}</p>
-                    <p className="text-xs text-gray-500">{session.user.role || 'Admin'}</p>
+                    <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
+                    <p className="text-xs text-gray-500">{user.role || 'Admin'}</p>
                   </div>
                 </div>
               )}

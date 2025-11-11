@@ -1,46 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Lock, Mail } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { status, data: session } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  // Add timeout for session check to prevent infinite loading
+  // Check if user is already logged in
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (status === 'loading') {
-        console.warn('Session check timed out after 5 seconds');
-        setSessionChecked(true);
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (data.user) {
+          // User is already logged in, redirect
+          const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+          window.location.href = callbackUrl;
+        } else {
+          setCheckingSession(false);
+        }
+      } catch (err) {
+        console.error('Session check error:', err);
+        setCheckingSession(false);
       }
-    }, 5000);
+    };
 
-    return () => clearTimeout(timer);
-  }, [status]);
-
-  // Redirect if already logged in - but let middleware handle it primarily
-  // Only redirect client-side if middleware didn't catch it
-  useEffect(() => {
-    if (status === 'authenticated' && session) {
-      const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
-      // Small delay to let middleware handle it first
-      const timer = setTimeout(() => {
-        console.log('Client-side redirect to:', callbackUrl);
-        window.location.replace(callbackUrl);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [status, session]);
+    checkSession();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,80 +39,40 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      console.log('Attempting login with email:', email);
-      
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      console.log('Login result:', result);
+      const data = await response.json();
 
-      if (result?.error) {
-        const errorMessage = result.error || 'Invalid credentials';
-        setError(errorMessage);
-        console.error('Login error:', errorMessage);
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Invalid credentials');
         setLoading(false);
-      } else if (result?.ok) {
-        console.log('Login successful, redirecting...');
-        // Login was successful, the session cookie should be set
-        // Let the useEffect handle the redirect when status changes to 'authenticated'
-        // Or redirect directly after a short delay
-        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
-        // Use a full page reload to ensure session is read
-        setTimeout(() => {
-          window.location.replace(callbackUrl);
-        }, 300);
-      } else {
-        setError('Login failed. Please check your credentials.');
-        console.error('Login failed - no error or success status');
-        setLoading(false);
+        return;
       }
+
+      // Login successful - redirect
+      const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin';
+      window.location.href = callbackUrl;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
       setError(errorMessage);
-      console.error('Login exception:', err);
       setLoading(false);
+      console.error('Login exception:', err);
     }
   };
 
-  // Show loading after successful login (while redirecting)
-  if (loading && !error) {
+  // Show loading while checking session
+  if (checkingSession || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Logging in...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If authenticated, show redirecting (middleware should handle this, but show UI just in case)
-  if (status === 'authenticated') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Redirecting to admin panel...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If session check is taking too long, show the form anyway
-  // This prevents infinite loading if session endpoint is slow/failing
-  if (status === 'loading' && sessionChecked) {
-    console.log('Session check timed out, showing login form anyway');
-    // Continue to show the form below
-  } else if (status === 'loading' && !sessionChecked) {
-    // Show loading only for the first 5 seconds
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{loading ? 'Logging in...' : 'Loading...'}</p>
         </div>
       </div>
     );
