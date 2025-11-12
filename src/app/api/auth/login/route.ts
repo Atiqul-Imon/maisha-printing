@@ -38,12 +38,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Set HTTP-only cookie
+    // In production, ensure secure is true and sameSite is 'lax' for cross-site requests
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     response.cookies.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction, // true in production (HTTPS required)
+      sameSite: 'lax', // Allows cookies to be sent with top-level navigations
       maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
+      path: '/', // Available for all paths
     });
 
     return response;

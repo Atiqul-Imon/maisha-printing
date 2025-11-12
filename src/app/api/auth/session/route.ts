@@ -14,7 +14,7 @@ export async function GET() {
       expires: session.expires,
     });
   } catch (error) {
-    console.error('Session error:', error);
+    console.error('Session API error:', error);
     return NextResponse.json({ user: null });
   }
 }

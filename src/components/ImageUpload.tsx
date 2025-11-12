@@ -66,12 +66,24 @@ export default function ImageUpload({ onUploadComplete, existingUrl, onRemove }:
 
       const result = await response.json();
 
+      if (!response.ok || !result.success) {
+        // Handle authentication errors
+        if (response.status === 401 || response.status === 403) {
+          setError(result.error || 'Your account cannot be authenticated. Please log in again.');
+          // Optionally redirect to login after a delay
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 2000);
+        } else {
+          setError(result.error || 'Upload failed');
+        }
+        setPreview(null);
+        return;
+      }
+
       if (result.success) {
         setPreview(result.data.url);
         onUploadComplete(result.data.url);
-      } else {
-        setError(result.error || 'Upload failed');
-        setPreview(null);
       }
     } catch (err) {
       console.error('Upload error:', err);

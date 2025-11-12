@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromCookie } from '@/lib/auth-custom';
+import { getSessionFromCookie, verifySessionToken } from '@/lib/auth-custom';
 
 const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/dtqqmnmqo';
 const IMAGEKIT_PRIVATE_KEY = 'CELMONWRfc5WrCRuwKsW3raUqw=';
@@ -10,11 +10,37 @@ const IMAGEKIT_PRIVATE_KEY = 'CELMONWRfc5WrCRuwKsW3raUqw=';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getSessionFromCookie();
+    // Check authentication - try multiple methods
+    let session = await getSessionFromCookie();
+    
+    // Fallback: try reading cookie from request headers directly
+    if (!session) {
+      const cookieHeader = request.headers.get('cookie');
+      if (cookieHeader) {
+        const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+          const [key, value] = cookie.trim().split('=');
+          acc[key] = value;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        const token = cookies['auth-token'];
+        if (token) {
+          session = await verifySessionToken(token);
+        }
+      }
+    }
+    
+    // Debug logging
+    console.log('Upload route - Session check:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userEmail: session?.user?.email,
+    });
+    
     if (!session || !session.user) {
+      console.error('Upload route - Authentication failed: No session or user');
       return NextResponse.json(
-        { success: false, error: 'Your account cannot be authenticated.' },
+        { success: false, error: 'Your account cannot be authenticated. Please log in again.' },
         { status: 401 }
       );
     }

@@ -130,11 +130,17 @@ export async function getSessionFromCookie(): Promise<Session | null> {
     const token = cookieStore.get('auth-token')?.value;
 
     if (!token) {
+      console.log('getSessionFromCookie: No auth-token cookie found');
       return null;
     }
 
-    return await verifySessionToken(token);
+    const session = await verifySessionToken(token);
+    if (!session) {
+      console.log('getSessionFromCookie: Token verification failed');
+    }
+    return session;
   } catch (error) {
+    console.error('getSessionFromCookie error:', error);
     return null;
   }
 }
