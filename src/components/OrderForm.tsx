@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Plus, Trash2, Loader2 } from 'lucide-react';
 import { Order, OrderItem, CustomerInfo } from '@/types/order';
 import { Product as ProductType } from '@/types/product';

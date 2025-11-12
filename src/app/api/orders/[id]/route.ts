@@ -7,19 +7,20 @@ import { ObjectId } from 'mongodb';
 // GET - Fetch single order
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
     
-    const order = await getOrderById(params.id);
+    const { id } = await params;
+    const order = await getOrderById(id);
     
     if (!order) {
       return NextResponse.json(
@@ -48,20 +49,22 @@ export async function GET(
 // PUT - Update order
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
     
+    const { id } = await params;
+    
     // Validate ObjectId
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid order ID' },
         { status: 400 }
@@ -73,11 +76,16 @@ export async function PUT(
     // If items are updated, recalculate totals
     if (body.items && Array.isArray(body.items)) {
       let subtotal = 0;
-      body.items.forEach((item: { quantity: number; unitPrice: number }) => {
-        item.totalPrice = item.quantity * item.unitPrice;
-        subtotal += item.totalPrice;
+      const updatedItems = body.items.map((item: { quantity: number; unitPrice: number; totalPrice?: number }) => {
+        const totalPrice = item.quantity * item.unitPrice;
+        subtotal += totalPrice;
+        return {
+          ...item,
+          totalPrice,
+        };
       });
       
+      body.items = updatedItems;
       body.subtotal = subtotal;
       const discount = body.discount || 0;
       const tax = body.tax || 0;
@@ -85,7 +93,7 @@ export async function PUT(
       body.total = subtotal - discount + tax + shipping;
     }
     
-    const order = await updateOrder(params.id, body);
+    const order = await updateOrder(id, body);
     
     if (!order) {
       return NextResponse.json(
@@ -96,7 +104,7 @@ export async function PUT(
     
     // Invalidate cache
     revalidateTag('orders');
-    revalidateTag(`order-${params.id}`);
+    revalidateTag(`order-${id}`);
     
     return NextResponse.json(
       { success: true, data: order }
@@ -113,27 +121,29 @@ export async function PUT(
 // DELETE - Delete order
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
     
+    const { id } = await params;
+    
     // Validate ObjectId
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid order ID' },
         { status: 400 }
       );
     }
     
-    const deleted = await deleteOrder(params.id);
+    const deleted = await deleteOrder(id);
     
     if (!deleted) {
       return NextResponse.json(
@@ -144,7 +154,7 @@ export async function DELETE(
     
     // Invalidate cache
     revalidateTag('orders');
-    revalidateTag(`order-${params.id}`);
+    revalidateTag(`order-${id}`);
     
     return NextResponse.json(
       { success: true, message: 'Order deleted successfully' }

@@ -50,13 +50,14 @@ async function _getAllOrdersUncached(filters?: OrderFilters): Promise<Order[]> {
     }
     
     if (filters?.dateFrom || filters?.dateTo) {
-      query.createdAt = {};
+      const dateQuery: Record<string, string> = {};
       if (filters.dateFrom) {
-        query.createdAt.$gte = filters.dateFrom;
+        dateQuery.$gte = filters.dateFrom;
       }
       if (filters.dateTo) {
-        query.createdAt.$lte = filters.dateTo;
+        dateQuery.$lte = filters.dateTo;
       }
+      query.createdAt = dateQuery;
     }
     
     // Build sort

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Order, OrderStatus, PaymentStatus } from '@/types/order';
 import { Edit, Trash2, Eye, Calendar, Phone, Mail, MapPin } from 'lucide-react';
 
@@ -28,7 +27,6 @@ const paymentStatusColors: Record<PaymentStatus, string> = {
 };
 
 export default function OrderList({ orders, onEdit, onDelete, onView }: OrderListProps) {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

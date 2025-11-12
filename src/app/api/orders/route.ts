@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -113,9 +113,13 @@ export async function POST(request: NextRequest) {
     
     // Calculate totals
     let subtotal = 0;
-    body.items.forEach((item: { quantity: number; unitPrice: number }) => {
-      item.totalPrice = item.quantity * item.unitPrice;
-      subtotal += item.totalPrice;
+    const itemsWithTotals = body.items.map((item: { quantity: number; unitPrice: number; totalPrice?: number }) => {
+      const totalPrice = item.quantity * item.unitPrice;
+      subtotal += totalPrice;
+      return {
+        ...item,
+        totalPrice,
+      };
     });
     
     const discount = body.discount || 0;
@@ -125,7 +129,7 @@ export async function POST(request: NextRequest) {
     
     // Create order
     const order = await createOrder({
-      items: body.items,
+      items: itemsWithTotals,
       customer: body.customer,
       status: body.status || 'pending',
       paymentStatus: body.paymentStatus || 'pending',
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
       total,
       notes: body.notes,
       estimatedDelivery: body.estimatedDelivery,
-      createdBy: session.id,
+      createdBy: session.user.id,
     });
     
     // Invalidate cache

@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getSessionFromCookie } from '@/lib/auth-custom';
 import { getOrderSummary } from '@/lib/orders-server';
 
 // GET - Get order summary statistics
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await getSessionFromCookie();
-    if (!session || session.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
