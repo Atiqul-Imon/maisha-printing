@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle, Star, Award, Clock } from 'lucide-react';
-import { getAllProducts, getFeaturedProducts } from '@/lib/products-server';
+import { getAllProducts } from '@/lib/products-server';
 import ProductCard from '@/components/ProductCard';
 
 export default async function Home() {
-  const featuredProducts = await getFeaturedProducts();
   const allProducts = await getAllProducts();
 
   const testimonials = [
@@ -54,10 +53,10 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-white drop-shadow-lg">
                 Professional Printing Services in Bangladesh
               </h1>
-              <p className="text-lg sm:text-xl text-green-100 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="text-lg sm:text-xl text-white/95 leading-relaxed max-w-2xl mx-auto lg:mx-0 drop-shadow-md">
                 From t-shirts to business cards, we deliver high-quality printing solutions 
                 with fast turnaround times and competitive prices. Your trusted printing partner.
               </p>
@@ -79,23 +78,23 @@ export default async function Home() {
             </div>
             <div className="relative mt-8 lg:mt-0">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 space-y-6 border border-white/20">
-                <h3 className="text-xl lg:text-2xl font-semibold text-center lg:text-left">Why Choose Us?</h3>
+                <h3 className="text-xl lg:text-2xl font-semibold text-center lg:text-left text-white drop-shadow-md">Why Choose Us?</h3>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
-                    <span className="text-sm lg:text-base">High-quality materials</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-white flex-shrink-0 drop-shadow-md" />
+                    <span className="text-sm lg:text-base text-white drop-shadow-sm">High-quality materials</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
-                    <span className="text-sm lg:text-base">Fast turnaround times</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-white flex-shrink-0 drop-shadow-md" />
+                    <span className="text-sm lg:text-base text-white drop-shadow-sm">Fast turnaround times</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
-                    <span className="text-sm lg:text-base">Competitive pricing</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-white flex-shrink-0 drop-shadow-md" />
+                    <span className="text-sm lg:text-base text-white drop-shadow-sm">Competitive pricing</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 flex-shrink-0" />
-                    <span className="text-sm lg:text-base">Professional customer service</span>
+                    <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-white flex-shrink-0 drop-shadow-md" />
+                    <span className="text-sm lg:text-base text-white drop-shadow-sm">Professional customer service</span>
                   </div>
                 </div>
               </div>
@@ -104,26 +103,6 @@ export default async function Home() {
         </div>
       </section>
 
-
-      {/* Featured Products/Services Section */}
-      <section className="py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Our Featured Services
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Explore our premium printing services designed to meet all your business and personal needs
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* All Products/Services Section */}
       <section className="bg-gray-50 py-16 lg:py-20">

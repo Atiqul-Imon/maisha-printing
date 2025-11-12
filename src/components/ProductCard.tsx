@@ -15,7 +15,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-green-200 hover:-translate-y-1"
+      className="group bg-white transition-all duration-300 overflow-hidden border border-gray-200 hover:border-green-500"
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
@@ -26,20 +26,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-300"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4">
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase">
-            {product.category}
-          </span>
-        </div>
-        {/* Featured Badge */}
-        {product.featured && (
-          <div className="absolute top-4 right-4">
-            <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-              Featured
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Content */}

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface CloudinaryImageProps {
   src: string;
@@ -34,15 +34,27 @@ export default function CloudinaryImage({
   objectFit = 'cover',
 }: CloudinaryImageProps) {
   const [error, setError] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Generate Cloudinary URL with transformations
-  const cloudinaryUrl = getCloudinaryUrl(src, {
-    width: width,
-    height: height,
-    quality,
-    format,
-    crop: width && height ? 'fill' : 'limit',
-  });
+  // Generate Cloudinary URL with transformations - memoize to prevent hydration mismatches
+  const cloudinaryUrl = useMemo(() => {
+    if (!mounted) {
+      // Return a placeholder during SSR to prevent hydration mismatch
+      return src;
+    }
+    return getCloudinaryUrl(src, {
+      width: width,
+      height: height,
+      quality,
+      format,
+      crop: width && height ? 'fill' : 'limit',
+    });
+  }, [src, width, height, quality, format, mounted]);
+
+  // Set mounted flag on client side only
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fallback if image fails to load
   if (error) {
