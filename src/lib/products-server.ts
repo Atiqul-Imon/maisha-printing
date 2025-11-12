@@ -5,11 +5,12 @@
 
 import { Product } from '@/types/product';
 import { getProductsCollection } from './mongodb';
+import { unstable_cache } from 'next/cache';
 
 /**
- * Get all products from MongoDB (Server-side only)
+ * Internal function to fetch all products from MongoDB (uncached)
  */
-export async function getAllProducts(): Promise<Product[]> {
+async function _getAllProductsUncached(): Promise<Product[]> {
   try {
     const collection = await getProductsCollection();
     if (!collection) {
@@ -36,9 +37,24 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 /**
- * Get product by slug from MongoDB (Server-side only)
+ * Get all products from MongoDB (Server-side only)
+ * Cached for 60 seconds to improve performance
  */
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export async function getAllProducts(): Promise<Product[]> {
+  return unstable_cache(
+    async () => _getAllProductsUncached(),
+    ['all-products'],
+    {
+      revalidate: 60, // Revalidate every 60 seconds
+      tags: ['products'],
+    }
+  )();
+}
+
+/**
+ * Internal function to fetch product by slug (uncached)
+ */
+async function _getProductBySlugUncached(slug: string): Promise<Product | null> {
   try {
     const collection = await getProductsCollection();
     if (!collection) {
@@ -69,7 +85,23 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 /**
+ * Get product by slug from MongoDB (Server-side only)
+ * Cached for 60 seconds to improve performance
+ */
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return unstable_cache(
+    async () => _getProductBySlugUncached(slug),
+    [`product-${slug}`],
+    {
+      revalidate: 60, // Revalidate every 60 seconds
+      tags: ['products', `product-${slug}`],
+    }
+  )();
+}
+
+/**
  * Get featured products
+ * Uses cached getAllProducts for better performance
  */
 export async function getFeaturedProducts(): Promise<Product[]> {
   const products = await getAllProducts();

@@ -18,7 +18,7 @@ export async function getAllProducts(): Promise<Product[]> {
 export async function getAllProductsClient(): Promise<Product[]> {
   try {
     const response = await fetch('/api/products', {
-      cache: 'no-store',
+      next: { revalidate: 60 }, // Revalidate every 60 seconds
     });
     
     if (!response.ok) {
@@ -34,12 +34,12 @@ export async function getAllProductsClient(): Promise<Product[]> {
 }
 
 /**
- * Client-side fetch product by slug
+ * Client-side fetch product by slug (with caching)
  */
 export async function getProductBySlugClient(slug: string): Promise<Product | null> {
   try {
     const response = await fetch(`/api/products/by-slug/${slug}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 }, // Revalidate every 60 seconds
     });
 
     if (!response.ok) {

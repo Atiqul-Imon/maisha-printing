@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProductsCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getSessionFromCookie } from '@/lib/auth-custom';
+import { revalidateTag } from 'next/cache';
 
 // PUT - Update product orders in bulk
 export async function PUT(request: NextRequest) {
@@ -42,6 +43,9 @@ export async function PUT(request: NextRequest) {
     });
 
     await Promise.all(updatePromises);
+
+    // Revalidate cache after reordering products
+    revalidateTag('products');
 
     return NextResponse.json({
       success: true,

@@ -2,29 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProductsCollection } from '@/lib/mongodb';
 import { Product } from '@/types/product';
 import { getSessionFromCookie } from '@/lib/auth-custom';
+import { getAllProducts } from '@/lib/products-server';
+import { revalidateTag } from 'next/cache';
+import { generateSlug, generateUniqueSlug } from '@/lib/slug';
 
-// GET - Fetch all products
+// GET - Fetch all products (with caching)
 export async function GET() {
   try {
-    const collection = await getProductsCollection();
-    if (!collection) {
-      // MongoDB not configured, use fallback
-      const { getAllProducts } = await import('@/data/products');
-      const products = getAllProducts();
-      return NextResponse.json({ success: true, data: products });
-    }
+    // Use cached server-side function for better performance
+    const products = await getAllProducts();
     
-    // Sort by order (ascending), then by createdAt if order is not set
-    const products = await collection.find({}).sort({ order: 1, createdAt: -1 }).toArray();
-    
-    // Convert MongoDB _id to string id
-    const formattedProducts = products.map((product: Record<string, unknown> & { _id: { toString: () => string } }) => ({
-      ...product,
-      id: product._id.toString(),
-      _id: undefined,
-    })) as unknown as Product[];
-
-    return NextResponse.json({ success: true, data: formattedProducts });
+    // Return with cache headers
+    return NextResponse.json(
+      { success: true, data: products },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
@@ -57,21 +53,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.title || !body.slug || !body.shortDescription) {
+    if (!body.title || !body.shortDescription) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields (title and shortDescription are required)' },
         { status: 400 }
       );
     }
 
-    // Check if slug already exists
-    const existingProduct = await collection.findOne({ slug: body.slug });
-    if (existingProduct) {
-      return NextResponse.json(
-        { success: false, error: 'Product with this slug already exists' },
-        { status: 400 }
-      );
+    // Generate slug from title if not provided
+    let finalSlug = body.slug;
+    if (!finalSlug || finalSlug.trim() === '') {
+      finalSlug = generateSlug(body.title);
+    } else {
+      // Normalize provided slug
+      finalSlug = generateSlug(finalSlug);
     }
+
+    // Ensure slug is unique
+    const checkSlugExists = async (slug: string): Promise<boolean> => {
+      const existing = await collection.findOne({ slug });
+      return !!existing;
+    };
+
+    finalSlug = await generateUniqueSlug(finalSlug, checkSlugExists);
 
     // Get the highest order number to set for new product
     const lastProduct = await collection.findOne({}, { sort: { order: -1 } });
@@ -84,7 +88,7 @@ export async function POST(request: NextRequest) {
       longDescription: body.longDescription || '',
       category: body.category || 'service',
       subcategory: body.subcategory || '',
-      slug: body.slug,
+      slug: finalSlug,
       featured: body.featured || false,
       images: body.images || [],
       metaTitle: body.metaTitle,
@@ -96,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     // Insert into database
     const result = await collection.insertOne(product);
+
+    // Revalidate cache after creating product
+    revalidateTag('products');
 
     return NextResponse.json({
       success: true,

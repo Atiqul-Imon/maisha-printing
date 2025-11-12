@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProductsCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getSessionFromCookie } from '@/lib/auth-custom';
+import { revalidateTag } from 'next/cache';
+import { generateSlug, generateUniqueSlug } from '@/lib/slug';
 
 // GET - Fetch single product by ID
 export async function GET(
@@ -78,23 +80,45 @@ export async function PUT(
       );
     }
 
-    // If slug is being changed, check if new slug exists
+    // Handle slug generation and uniqueness
+    let finalSlug = body.slug;
     if (body.slug && body.slug !== existingProduct.slug) {
-      const slugExists = await collection.findOne({ 
-        slug: body.slug,
-        _id: { $ne: new ObjectId(params.id) }
-      });
-      if (slugExists) {
-        return NextResponse.json(
-          { success: false, error: 'Product with this slug already exists' },
-          { status: 400 }
-        );
-      }
+      // Normalize the slug
+      finalSlug = generateSlug(body.slug);
+      
+      // Ensure slug is unique (excluding current product)
+      const checkSlugExists = async (slug: string): Promise<boolean> => {
+        const existing = await collection.findOne({ 
+          slug,
+          _id: { $ne: new ObjectId(params.id) }
+        });
+        return !!existing;
+      };
+
+      finalSlug = await generateUniqueSlug(finalSlug, checkSlugExists);
+    } else if (!body.slug && body.title && body.title !== existingProduct.title) {
+      // If title changed but no slug provided, generate from new title
+      finalSlug = generateSlug(body.title);
+      
+      // Ensure slug is unique
+      const checkSlugExists = async (slug: string): Promise<boolean> => {
+        const existing = await collection.findOne({ 
+          slug,
+          _id: { $ne: new ObjectId(params.id) }
+        });
+        return !!existing;
+      };
+
+      finalSlug = await generateUniqueSlug(finalSlug, checkSlugExists);
+    } else {
+      // Keep existing slug
+      finalSlug = existingProduct.slug;
     }
 
     // Update product
     const updateData = {
       ...body,
+      slug: finalSlug,
       updatedAt: new Date().toISOString(),
     };
 
@@ -117,6 +141,16 @@ export async function PUT(
       id: updatedProduct._id.toString(),
       _id: undefined,
     };
+
+    // Revalidate cache after updating product
+    revalidateTag('products');
+    if (updatedProduct.slug) {
+      revalidateTag(`product-${updatedProduct.slug}`);
+    }
+    // Also revalidate old slug if it changed
+    if (existingProduct.slug && existingProduct.slug !== updatedProduct.slug) {
+      revalidateTag(`product-${existingProduct.slug}`);
+    }
 
     return NextResponse.json({
       success: true,
@@ -164,6 +198,9 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    // Revalidate cache after deleting product
+    revalidateTag('products');
 
     return NextResponse.json({
       success: true,

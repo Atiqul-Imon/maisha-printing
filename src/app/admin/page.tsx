@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical, 
 import CloudinaryImage from '@/components/CloudinaryImage';
 import ImageUpload from '@/components/ImageUpload';
 import DraggableProductList from '@/components/DraggableProductList';
+import { generateSlug } from '@/lib/slug';
 
 interface User {
   id: string;
@@ -625,26 +626,37 @@ export default function AdminPanel() {
                         type="text"
                         required
                         value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        onChange={(e) => {
+                          const newTitle = e.target.value;
+                          // Auto-generate slug from title if slug is empty or matches the previous title's slug
+                          const currentSlugFromTitle = generateSlug(formData.title || '');
+                          const shouldAutoGenerate = !formData.slug || formData.slug === currentSlugFromTitle;
+                          
+                          setFormData({
+                            ...formData,
+                            title: newTitle,
+                            slug: shouldAutoGenerate ? generateSlug(newTitle) : formData.slug,
+                          });
+                        }}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white"
                         placeholder="Enter product title"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Slug <span className="text-red-500">*</span>
+                        Slug <span className="text-gray-400 font-normal">(auto-generated from title)</span>
                       </label>
                       <input
                         type="text"
-                        required
                         value={formData.slug}
-                        onChange={(e) =>
-                          setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })
-                        }
+                        onChange={(e) => {
+                          // Allow manual editing but normalize the slug
+                          setFormData({ ...formData, slug: generateSlug(e.target.value) });
+                        }}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white"
-                        placeholder="product-slug-url"
+                        placeholder="Auto-generated from title"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Used in the product URL</p>
+                      <p className="text-xs text-gray-500 mt-1">Auto-generated from title. Can be edited manually. Will be made unique if needed.</p>
                     </div>
                   </div>
 
