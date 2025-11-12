@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { memo } from 'react';
 import { Product } from '@/types/product';
 import { GripVertical } from 'lucide-react';
 import CloudinaryImage from './CloudinaryImage';
@@ -34,7 +35,7 @@ interface SortableItemProps {
   onDelete: (productId: string) => void;
 }
 
-function SortableItem({ product, onEdit, onDelete }: SortableItemProps) {
+const SortableItem = memo(function SortableItem({ product, onEdit, onDelete }: SortableItemProps) {
   const {
     attributes,
     listeners,
@@ -137,7 +138,9 @@ function SortableItem({ product, onEdit, onDelete }: SortableItemProps) {
       </div>
     </div>
   );
-}
+});
+
+SortableItem.displayName = 'SortableItem';
 
 export default function DraggableProductList({
   products,

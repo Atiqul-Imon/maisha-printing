@@ -16,15 +16,14 @@ export default function ImageUpload({ onUploadComplete, existingUrl, onRemove }:
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Update preview when existingUrl changes
+  // Update preview when existingUrl changes - optimized to prevent unnecessary updates
   useEffect(() => {
     if (existingUrl && existingUrl !== preview) {
       setPreview(existingUrl);
     } else if (!existingUrl && preview && !preview.startsWith('data:')) {
       setPreview(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingUrl]);
+  }, [existingUrl, preview]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

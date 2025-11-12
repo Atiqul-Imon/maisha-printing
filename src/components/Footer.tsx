@@ -1,28 +1,9 @@
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
+import { services, quickLinks } from '@/data/navigation';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-
-  const services = [
-    { name: 'T-Shirt Printing', href: '/services/t-shirt' },
-    { name: 'Glass Printing', href: '/services/glass' },
-    { name: 'Calendar Printing', href: '/services/calendar' },
-    { name: 'ID Card Printing', href: '/services/id-card' },
-    { name: 'Ribbon Printing', href: '/services/ribbon' },
-    { name: 'Sticker Printing', href: '/services/sticker' },
-    { name: 'Visiting Card', href: '/services/visiting-card' },
-    { name: 'Flyer & Brochure', href: '/services/flyer-brochure' },
-  ];
-
-  const quickLinks = [
-    { name: 'About Us', href: '/about' },
-    { name: 'Our Services', href: '/services' },
-    { name: 'Contact Us', href: '/contact' },
-    { name: 'Get Quote', href: '/contact' },
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-  ];
 
   return (
     <footer className="bg-gray-900 text-white">

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import CloudinaryImage from './CloudinaryImage';
 import { Product } from '@/types/product';
@@ -9,7 +10,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const mainImage = product.images[0] || { url: '/placeholder.jpg', alt: product.title };
 
   return (
@@ -43,5 +44,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
     </Link>
   );
-}
+});
+
+ProductCard.displayName = 'ProductCard';
+
+export default ProductCard;
 

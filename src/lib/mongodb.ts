@@ -8,7 +8,15 @@ const getUri = (): string | null => {
   return process.env.MONGODB_URI || null;
 };
 
-const options = {};
+// MongoDB connection options for better performance and reliability
+const options = {
+  maxPoolSize: 10, // Maximum number of connections in the connection pool
+  minPoolSize: 2, // Minimum number of connections in the connection pool
+  maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+  serverSelectionTimeoutMS: 5000, // How long to try selecting a server
+  socketTimeoutMS: 45000, // How long to wait for a socket connection
+  connectTimeoutMS: 10000, // How long to wait for initial connection
+};
 
 let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient> | null = null;

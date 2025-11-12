@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import CloudinaryImage from '@/components/CloudinaryImage';
-import { getProductBySlugClient, getAllProductsClient } from '@/lib/products';
+import { getProductBySlugClient } from '@/lib/products';
 import { Product } from '@/types/product';
 import { ArrowLeft, Phone, Mail, CheckCircle } from 'lucide-react';
 
@@ -28,11 +28,22 @@ export default function ProductDetailPage() {
           if (foundProduct) {
             setProduct(foundProduct);
             
-            // Fetch related products
-            const allProducts = await getAllProductsClient();
-            setRelatedProducts(
-              allProducts.filter((p) => p.id !== foundProduct.id).slice(0, 4)
-            );
+            // Fetch related products efficiently (only 5, not all products)
+            // Use cached API endpoint with limit and exclude parameters
+            try {
+              const relatedResponse = await fetch(`/api/products?limit=5&exclude=${foundProduct.id}`, {
+                next: { revalidate: 60 },
+              });
+              if (relatedResponse.ok) {
+                const relatedResult = await relatedResponse.json();
+                if (relatedResult.success) {
+                  setRelatedProducts(relatedResult.data.slice(0, 4));
+                }
+              }
+            } catch (relatedError) {
+              // Silently fail for related products - not critical
+              console.warn('Failed to fetch related products:', relatedError);
+            }
             setNotFound(false);
           } else {
             setProduct(null);
@@ -52,6 +63,12 @@ export default function ProductDetailPage() {
     };
     fetchData();
   }, [params]);
+
+  // Memoize selected image to prevent unnecessary recalculations (must be before early returns)
+  const selectedImage = useMemo(
+    () => product?.images[selectedImageIndex] || product?.images[0] || null,
+    [product?.images, selectedImageIndex]
+  );
 
   if (loading) {
     return (
@@ -82,8 +99,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const selectedImage = product.images[selectedImageIndex] || product.images[0];
-
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
@@ -110,7 +125,7 @@ export default function ProductDetailPage() {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100">
-              {selectedImage && (
+              {selectedImage?.url && (
                 <CloudinaryImage
                   src={selectedImage.url}
                   alt={selectedImage.alt || product.title}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product } from '@/types/product';
 import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical, Package, TrendingUp, CheckCircle, AlertCircle, Search, Filter } from 'lucide-react';
@@ -78,17 +78,13 @@ export default function AdminPanel() {
     images: [{ url: '', alt: '' }],
   });
 
-  // Show toast notification
-  const showToast = (message: string, type: 'success' | 'error') => {
+  // Show toast notification - memoized to prevent unnecessary re-renders
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
-  };
-
-  useEffect(() => {
-    fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await fetch('/api/products', {
         credentials: 'include',
@@ -96,7 +92,8 @@ export default function AdminPanel() {
       const result = await response.json();
       if (result.success) {
         // Sort products by order if available, then by createdAt
-        const sortedProducts = result.data.sort((a: Product, b: Product) => {
+        // Create new array to avoid mutating the original (better for React)
+        const sortedProducts = [...result.data].sort((a: Product, b: Product) => {
           if (a.order !== undefined && b.order !== undefined) {
             return a.order - b.order;
           }
@@ -111,9 +108,13 @@ export default function AdminPanel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleReorder = async (reorderedProducts: Product[]) => {
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const handleReorder = useCallback(async (reorderedProducts: Product[]) => {
     try {
       // Optimistically update UI
       setProducts(reorderedProducts);
@@ -149,9 +150,9 @@ export default function AdminPanel() {
       await fetchProducts();
       showToast('Failed to save order. Please try again.', 'error');
     }
-  };
+  }, [fetchProducts, showToast]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -197,15 +198,15 @@ export default function AdminPanel() {
       console.error('Error saving product:', error);
         showToast('Failed to save product. Please try again.', 'error');
     }
-  };
+  }, [editingProduct, formData, showToast, fetchProducts]);
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = useCallback((product: Product) => {
     setEditingProduct(product);
     setFormData(product);
     setShowForm(true);
-  };
+  }, []);
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = useCallback(async (productId: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
       try {
         const response = await fetch(`/api/products/${productId}`, {
@@ -226,25 +227,53 @@ export default function AdminPanel() {
         showToast('Failed to delete product. Please try again.', 'error');
       }
     }
-  };
+  }, [showToast, fetchProducts]);
 
-  const addImageField = () => {
-    setFormData({
-      ...formData,
-      images: [...(formData.images || []), { url: '', alt: '' }],
+  const addImageField = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), { url: '', alt: '' }],
+    }));
+  }, []);
+
+  const removeImageField = useCallback((index: number) => {
+    setFormData((prev) => {
+      const newImages = prev.images?.filter((_, i) => i !== index) || [];
+      return { ...prev, images: newImages };
     });
-  };
+  }, []);
 
-  const removeImageField = (index: number) => {
-    const newImages = formData.images?.filter((_, i) => i !== index) || [];
-    setFormData({ ...formData, images: newImages });
-  };
+  const updateImageField = useCallback((index: number, field: 'url' | 'alt', value: string) => {
+    setFormData((prev) => {
+      const newImages = [...(prev.images || [])];
+      newImages[index] = { ...newImages[index], [field]: value };
+      return { ...prev, images: newImages };
+    });
+  }, []);
 
-  const updateImageField = (index: number, field: 'url' | 'alt', value: string) => {
-    const newImages = [...(formData.images || [])];
-    newImages[index] = { ...newImages[index], [field]: value };
-    setFormData({ ...formData, images: newImages });
-  };
+  // Filter and search products - memoized for performance (must be before early returns)
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery && filterCategory === 'all') {
+      return products;
+    }
+    
+    const lowerSearchQuery = searchQuery.toLowerCase();
+    return products.filter((product) => {
+      const matchesSearch = searchQuery === '' || 
+        product.title.toLowerCase().includes(lowerSearchQuery) ||
+        product.shortDescription.toLowerCase().includes(lowerSearchQuery);
+      const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, filterCategory]);
+
+  // Calculate statistics - memoized for performance (must be before early returns)
+  const stats = useMemo(() => ({
+    total: products.length,
+    featured: products.filter(p => p.featured).length,
+    services: products.filter(p => p.category === 'service').length,
+    products: products.filter(p => p.category === 'product').length,
+  }), [products]);
 
   // Show loading state while checking authentication or loading products
   if (checkingAuth || (loading && products.length === 0 && !checkingAuth)) {
@@ -271,23 +300,6 @@ export default function AdminPanel() {
       </div>
     );
   }
-
-  // Filter and search products
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = searchQuery === '' || 
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Calculate statistics
-  const stats = {
-    total: products.length,
-    featured: products.filter(p => p.featured).length,
-    services: products.filter(p => p.category === 'service').length,
-    products: products.filter(p => p.category === 'product').length,
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">

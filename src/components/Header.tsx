@@ -3,27 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { mainNavigation, services } from '@/data/navigation';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-  ];
-
-  const services = [
-    { name: 'T-Shirt Printing', href: '/services/t-shirt' },
-    { name: 'Glass Printing', href: '/services/glass' },
-    { name: 'Calendar Printing', href: '/services/calendar' },
-    { name: 'ID Card Printing', href: '/services/id-card' },
-    { name: 'Ribbon Printing', href: '/services/ribbon' },
-    { name: 'Sticker Printing', href: '/services/sticker' },
-    { name: 'Visiting Card', href: '/services/visiting-card' },
-    { name: 'Flyer & Brochure', href: '/services/flyer-brochure' },
-  ];
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
@@ -47,7 +30,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              {navigation.map((item) => (
+              {mainNavigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -105,7 +88,7 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-4 pt-4 pb-6 space-y-2 bg-white border-t border-gray-100 shadow-lg">
-              {navigation.map((item) => (
+              {mainNavigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}

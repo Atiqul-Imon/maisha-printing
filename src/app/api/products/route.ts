@@ -7,10 +7,28 @@ import { revalidateTag } from 'next/cache';
 import { generateSlug, generateUniqueSlug } from '@/lib/slug';
 
 // GET - Fetch all products (with caching)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Use cached server-side function for better performance
-    const products = await getAllProducts();
+    let products = await getAllProducts();
+    
+    // Optional query parameters for optimization
+    const searchParams = request.nextUrl.searchParams;
+    const excludeId = searchParams.get('exclude');
+    const limit = searchParams.get('limit');
+    
+    // Filter out excluded product if specified
+    if (excludeId) {
+      products = products.filter((p) => p.id !== excludeId);
+    }
+    
+    // Apply limit if specified (for related products)
+    if (limit) {
+      const limitNum = parseInt(limit, 10);
+      if (!isNaN(limitNum) && limitNum > 0) {
+        products = products.slice(0, limitNum);
+      }
+    }
     
     // Return with cache headers
     return NextResponse.json(
@@ -78,7 +96,11 @@ export async function POST(request: NextRequest) {
     finalSlug = await generateUniqueSlug(finalSlug, checkSlugExists);
 
     // Get the highest order number to set for new product
-    const lastProduct = await collection.findOne({}, { sort: { order: -1 } });
+    // Use projection to only fetch the order field (more efficient)
+    const lastProduct = await collection.findOne(
+      {},
+      { sort: { order: -1 }, projection: { order: 1 } }
+    );
     const nextOrder = lastProduct && lastProduct.order ? lastProduct.order + 1 : 1;
 
     // Create product object

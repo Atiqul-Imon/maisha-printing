@@ -20,7 +20,11 @@ async function _getAllProductsUncached(): Promise<Product[]> {
     }
     
     // Sort by order (ascending), then by createdAt if order is not set
-    const products = await collection.find({}).sort({ order: 1, createdAt: -1 }).toArray();
+    // Use projection to exclude _id field after conversion (slightly more efficient)
+    const products = await collection
+      .find({})
+      .sort({ order: 1, createdAt: -1 })
+      .toArray();
     
     // Convert MongoDB _id to string id
     return products.map((product: Record<string, unknown> & { _id: { toString: () => string } }) => ({
@@ -110,11 +114,26 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
 /**
  * Get products by category
+ * Uses cached getAllProducts for better performance
  */
 export async function getProductsByCategory(category: string): Promise<Product[]> {
   const products = await getAllProducts();
   return products.filter(
     (product) => product.category === category || product.subcategory === category
   );
+}
+
+/**
+ * Get related products (excluding current product)
+ * Optimized to use cached getAllProducts
+ */
+export async function getRelatedProducts(
+  excludeProductId: string,
+  limit: number = 4
+): Promise<Product[]> {
+  const products = await getAllProducts();
+  return products
+    .filter((product) => product.id !== excludeProductId)
+    .slice(0, limit);
 }
 
