@@ -13,24 +13,58 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      setNotFound(false);
+      
       if (params?.slug && typeof params.slug === 'string') {
-        const foundProduct = await getProductBySlugClient(params.slug);
-        setProduct(foundProduct || null);
-        
-        // Fetch related products
-        const allProducts = await getAllProductsClient();
-        setRelatedProducts(
-          allProducts.filter((p) => p.id !== foundProduct?.id).slice(0, 4)
-        );
+        try {
+          const foundProduct = await getProductBySlugClient(params.slug);
+          
+          if (foundProduct) {
+            setProduct(foundProduct);
+            
+            // Fetch related products
+            const allProducts = await getAllProductsClient();
+            setRelatedProducts(
+              allProducts.filter((p) => p.id !== foundProduct.id).slice(0, 4)
+            );
+            setNotFound(false);
+          } else {
+            setProduct(null);
+            setNotFound(true);
+          }
+        } catch (error) {
+          console.error('Error fetching product:', error);
+          setProduct(null);
+          setNotFound(true);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+        setNotFound(true);
       }
     };
     fetchData();
   }, [params]);
 
-  if (!product) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
