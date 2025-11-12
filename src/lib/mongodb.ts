@@ -91,3 +91,15 @@ export async function getUsersCollection() {
   return db.collection('users');
 }
 
+/**
+ * Get orders collection
+ * Returns null if MongoDB is not configured
+ */
+export async function getOrdersCollection() {
+  const db = await getDatabase();
+  if (!db) {
+    return null;
+  }
+  return db.collection('orders');
+}
+

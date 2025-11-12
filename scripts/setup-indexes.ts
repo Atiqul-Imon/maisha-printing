@@ -3,7 +3,7 @@
  * Run with: tsx scripts/setup-indexes.ts
  */
 
-import { getProductsCollection, getUsersCollection } from '../src/lib/mongodb';
+import { getProductsCollection, getUsersCollection, getOrdersCollection } from '../src/lib/mongodb';
 
 async function setupIndexes() {
   try {
@@ -47,6 +47,45 @@ async function setupIndexes() {
       console.log('✓ Users collection indexes set up successfully');
     } else {
       console.log('⚠ Users collection not available (MongoDB not configured)');
+    }
+
+    // Setup orders collection indexes
+    const ordersCollection = await getOrdersCollection();
+    if (ordersCollection) {
+      // Index on orderNumber for fast lookups
+      await ordersCollection.createIndex({ orderNumber: 1 }, { unique: true });
+      console.log('✓ Created index on orders.orderNumber');
+
+      // Index on status for filtering
+      await ordersCollection.createIndex({ status: 1 });
+      console.log('✓ Created index on orders.status');
+
+      // Index on paymentStatus for filtering
+      await ordersCollection.createIndex({ paymentStatus: 1 });
+      console.log('✓ Created index on orders.paymentStatus');
+
+      // Index on customer phone for searching
+      await ordersCollection.createIndex({ 'customer.phone': 1 });
+      console.log('✓ Created index on orders.customer.phone');
+
+      // Index on customer email for searching
+      await ordersCollection.createIndex({ 'customer.email': 1 });
+      console.log('✓ Created index on orders.customer.email');
+
+      // Index on createdAt for sorting
+      await ordersCollection.createIndex({ createdAt: -1 });
+      console.log('✓ Created index on orders.createdAt');
+
+      // Compound indexes for common queries
+      await ordersCollection.createIndex({ status: 1, createdAt: -1 });
+      console.log('✓ Created compound index on orders.status + createdAt');
+
+      await ordersCollection.createIndex({ paymentStatus: 1, status: 1 });
+      console.log('✓ Created compound index on orders.paymentStatus + status');
+
+      console.log('✓ Orders collection indexes set up successfully');
+    } else {
+      console.log('⚠ Orders collection not available (MongoDB not configured)');
     }
 
     console.log('\n✅ All indexes set up successfully!');

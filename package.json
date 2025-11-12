@@ -11,7 +11,8 @@
     "create-admin": "tsx scripts/create-admin-user.ts",
     "verify-admin": "tsx scripts/verify-admin-credentials.ts",
     "reset-db": "tsx scripts/reset-database.ts",
-    "setup-indexes": "tsx scripts/setup-indexes.ts"
+    "setup-indexes": "tsx scripts/setup-indexes.ts",
+    "cleanup-products": "tsx scripts/cleanup-products.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

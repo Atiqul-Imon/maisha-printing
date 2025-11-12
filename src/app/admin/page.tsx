@@ -3,10 +3,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product } from '@/types/product';
-import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical, Package, TrendingUp, CheckCircle, AlertCircle, Search, Filter } from 'lucide-react';
+import { Order, OrderSummary } from '@/types/order';
+import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical, Package, TrendingUp, CheckCircle, AlertCircle, Search, Filter, ShoppingCart, DollarSign, Clock } from 'lucide-react';
 import CloudinaryImage from '@/components/CloudinaryImage';
 import ImageUpload from '@/components/ImageUpload';
 import DraggableProductList from '@/components/DraggableProductList';
+import OrderForm from '@/components/OrderForm';
+import OrderList from '@/components/OrderList';
 import { generateSlug } from '@/lib/slug';
 
 interface User {
@@ -16,12 +19,23 @@ interface User {
   role: string;
 }
 
+type TabType = 'products' | 'orders';
+
 export default function AdminPanel() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('products');
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
 
   // Check authentication on mount
   useEffect(() => {
@@ -113,6 +127,43 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // Fetch orders when orders tab is active
+  const fetchOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (orderStatusFilter !== 'all') {
+        params.append('status', orderStatusFilter);
+      }
+      if (orderSearchQuery) {
+        params.append('search', orderSearchQuery);
+      }
+      params.append('summary', 'true');
+      
+      const response = await fetch(`/api/orders?${params.toString()}`, {
+        credentials: 'include',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setOrders(result.data || []);
+        if (result.summary) {
+          setOrderSummary(result.summary);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [orderStatusFilter, orderSearchQuery]);
+
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [activeTab, fetchOrders]);
 
   const handleReorder = useCallback(async (reorderedProducts: Product[]) => {
     try {
@@ -251,6 +302,107 @@ export default function AdminPanel() {
     });
   }, []);
 
+  // Order management functions
+  const handleCreateOrder = useCallback(async (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orderData),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast('Order created successfully!', 'success');
+        setShowOrderForm(false);
+        setEditingOrder(null);
+        fetchOrders();
+      } else {
+        showToast(`Error: ${result.error || 'Failed to create order'}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      showToast('Failed to create order. Please try again.', 'error');
+    }
+  }, [showToast, fetchOrders]);
+
+  const handleUpdateOrder = useCallback(async (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'updatedAt'>) => {
+    if (!editingOrder) return;
+    
+    try {
+      const response = await fetch(`/api/orders/${editingOrder.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orderData),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast('Order updated successfully!', 'success');
+        setShowOrderForm(false);
+        setEditingOrder(null);
+        fetchOrders();
+      } else {
+        showToast(`Error: ${result.error || 'Failed to update order'}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+      showToast('Failed to update order. Please try again.', 'error');
+    }
+  }, [editingOrder, showToast, fetchOrders]);
+
+  const handleDeleteOrder = useCallback(async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast('Order deleted successfully!', 'success');
+        fetchOrders();
+      } else {
+        showToast(`Error: ${result.error || 'Failed to delete order'}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      showToast('Failed to delete order. Please try again.', 'error');
+    }
+  }, [showToast, fetchOrders]);
+
+  const handleEditOrder = useCallback((order: Order) => {
+    setEditingOrder(order);
+    setShowOrderForm(true);
+  }, []);
+
+  const handleViewOrder = useCallback((order: Order) => {
+    setViewingOrder(order);
+  }, []);
+
+  // Filter orders
+  const filteredOrders = useMemo(() => {
+    if (!orderSearchQuery && orderStatusFilter === 'all') {
+      return orders;
+    }
+    
+    const lowerSearchQuery = orderSearchQuery.toLowerCase();
+    return orders.filter((order) => {
+      const matchesSearch = !orderSearchQuery || 
+        order.orderNumber.toLowerCase().includes(lowerSearchQuery) ||
+        order.customer.name.toLowerCase().includes(lowerSearchQuery) ||
+        order.customer.phone.includes(orderSearchQuery) ||
+        (order.customer.email && order.customer.email.toLowerCase().includes(lowerSearchQuery));
+      const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, orderSearchQuery, orderStatusFilter]);
+
   // Filter and search products - memoized for performance (must be before early returns)
   const filteredProducts = useMemo(() => {
     if (!searchQuery && filterCategory === 'all') {
@@ -357,26 +509,40 @@ export default function AdminPanel() {
                 Logout
               </button>
               
-              <button
-                onClick={() => {
-                  setShowForm(true);
-                  setEditingProduct(null);
-                  setFormData({
-                    title: '',
-                    shortDescription: '',
-                    longDescription: '',
-                    category: 'service',
-                    subcategory: '',
-                    slug: '',
-                    featured: false,
-                    images: [{ url: '', alt: '' }],
-                  });
-                }}
-                className="bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Add Product
-              </button>
+              {activeTab === 'products' && (
+                <button
+                  onClick={() => {
+                    setShowForm(true);
+                    setEditingProduct(null);
+                    setFormData({
+                      title: '',
+                      shortDescription: '',
+                      longDescription: '',
+                      category: 'service',
+                      subcategory: '',
+                      slug: '',
+                      featured: false,
+                      images: [{ url: '', alt: '' }],
+                    });
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add Product
+                </button>
+              )}
+              {activeTab === 'orders' && (
+                <button
+                  onClick={() => {
+                    setEditingOrder(null);
+                    setShowOrderForm(true);
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Order
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -384,8 +550,35 @@ export default function AdminPanel() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tabs */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 mb-6 flex gap-2">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              activeTab === 'products'
+                ? 'bg-green-600 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Package className="h-5 w-5" />
+            Products
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              activeTab === 'orders'
+                ? 'bg-green-600 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            Orders
+          </button>
+        </div>
+
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {activeTab === 'products' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center justify-between">
               <div>
@@ -434,9 +627,75 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
+        )}
+
+        {activeTab === 'orders' && orderSummary && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Orders</p>
+                  <p className="text-3xl font-bold text-gray-900">{orderSummary.totalOrders}</p>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <ShoppingCart className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Pending</p>
+                  <p className="text-3xl font-bold text-gray-900">{orderSummary.pendingOrders}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-xl">
+                  <Clock className="h-6 w-6 text-yellow-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">In Progress</p>
+                  <p className="text-3xl font-bold text-gray-900">{orderSummary.inProgressOrders}</p>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-xl">
+                  <TrendingUp className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Completed</p>
+                  <p className="text-3xl font-bold text-gray-900">{orderSummary.completedOrders}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+                  <p className="text-3xl font-bold text-green-600">৳{orderSummary.totalRevenue.toFixed(0)}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+        {activeTab === 'products' && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -462,9 +721,46 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
+        )}
 
-        {/* Reorder Instructions */}
-        <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search orders by order number, customer name, phone, or email..."
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                />
+              </div>
+              <div className="relative sm:w-48">
+                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <select
+                  value={orderStatusFilter}
+                  onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 appearance-none"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="ready">Ready</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Products Content */}
+        {activeTab === 'products' && (
+          <>
+            {/* Reorder Instructions */}
+            <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
           <div className="flex items-start gap-4">
             <div className="p-2 bg-blue-100 rounded-lg">
               <GripVertical className="h-5 w-5 text-blue-600" />
@@ -520,6 +816,49 @@ export default function AdminPanel() {
               Add Your First Product
             </button>
           </div>
+        )}
+          </>
+        )}
+
+        {/* Orders Content */}
+        {activeTab === 'orders' && (
+          <>
+            {ordersLoading ? (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Loading orders...</p>
+              </div>
+            ) : filteredOrders.length > 0 ? (
+              <OrderList
+                orders={filteredOrders}
+                onEdit={handleEditOrder}
+                onDelete={handleDeleteOrder}
+                onView={handleViewOrder}
+              />
+            ) : orders.length > 0 ? (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-lg font-semibold text-gray-900 mb-2">No orders found</p>
+                <p className="text-sm text-gray-600">Try adjusting your search or filter criteria.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-lg font-semibold text-gray-900 mb-2">No orders yet</p>
+                <p className="text-sm text-gray-600 mb-6">Get started by creating your first order!</p>
+                <button
+                  onClick={() => {
+                    setEditingOrder(null);
+                    setShowOrderForm(true);
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center mx-auto shadow-lg shadow-green-500/25"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Your First Order
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Old Grid View (Hidden) - Keeping for reference */}
@@ -856,6 +1195,209 @@ export default function AdminPanel() {
                 <Save className="h-5 w-5 mr-2" />
                 {editingProduct ? 'Update Product' : 'Create Product'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Form Modal */}
+      {showOrderForm && (
+        <OrderForm
+          order={editingOrder}
+          products={products}
+          onSave={editingOrder ? handleUpdateOrder : handleCreateOrder}
+          onClose={() => {
+            setShowOrderForm(false);
+            setEditingOrder(null);
+          }}
+        />
+      )}
+
+      {/* Order Details Modal */}
+      {viewingOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+              <button
+                onClick={() => setViewingOrder(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Order Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Order Number</p>
+                  <p className="text-xl font-bold text-gray-900">{viewingOrder.orderNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Status</p>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                    viewingOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    viewingOrder.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                    viewingOrder.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                    viewingOrder.status === 'ready' ? 'bg-indigo-100 text-indigo-800' :
+                    viewingOrder.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {viewingOrder.status.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Name</p>
+                    <p className="font-semibold text-gray-900">{viewingOrder.customer.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Phone</p>
+                    <p className="font-semibold text-gray-900">{viewingOrder.customer.phone}</p>
+                  </div>
+                  {viewingOrder.customer.email && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Email</p>
+                      <p className="font-semibold text-gray-900">{viewingOrder.customer.email}</p>
+                    </div>
+                  )}
+                  {viewingOrder.customer.address && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-gray-600 mb-1">Address</p>
+                      <p className="font-semibold text-gray-900">{viewingOrder.customer.address}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Items</h3>
+                <div className="space-y-4">
+                  {viewingOrder.items.map((item, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{item.productTitle}</p>
+                          {item.specifications && (
+                            <p className="text-sm text-gray-600 mt-1">{item.specifications}</p>
+                          )}
+                        </div>
+                        <p className="font-bold text-green-600">৳{item.totalPrice.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>Quantity: {item.quantity}</span>
+                        <span>Unit Price: ৳{item.unitPrice.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pricing Summary */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Summary</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-semibold">৳{viewingOrder.subtotal.toFixed(2)}</span>
+                  </div>
+                  {(viewingOrder.discount || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Discount</span>
+                      <span className="font-semibold text-red-600">-৳{(viewingOrder.discount || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {(viewingOrder.tax || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tax</span>
+                      <span className="font-semibold">৳{(viewingOrder.tax || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {(viewingOrder.shipping || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Shipping</span>
+                      <span className="font-semibold">৳{(viewingOrder.shipping || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="text-lg font-bold text-gray-900">Total</span>
+                    <span className="text-lg font-bold text-green-600">৳{viewingOrder.total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Payment Status</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                      viewingOrder.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                      viewingOrder.paymentStatus === 'partial' ? 'bg-orange-100 text-orange-800' :
+                      viewingOrder.paymentStatus === 'refunded' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {viewingOrder.paymentStatus.toUpperCase()}
+                    </span>
+                  </div>
+                  {viewingOrder.paymentMethod && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Payment Method</p>
+                      <p className="font-semibold text-gray-900">
+                        {viewingOrder.paymentMethod.replace('_', ' ').toUpperCase()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Information */}
+              {(viewingOrder.estimatedDelivery || viewingOrder.notes) && (
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h3>
+                  {viewingOrder.estimatedDelivery && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-1">Estimated Delivery</p>
+                      <p className="font-semibold text-gray-900">
+                        {new Date(viewingOrder.estimatedDelivery).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                  {viewingOrder.notes && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Admin Notes</p>
+                      <p className="text-gray-900 whitespace-pre-line">{viewingOrder.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+                <button
+                  onClick={() => setViewingOrder(null)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setViewingOrder(null);
+                    handleEditOrder(viewingOrder);
+                  }}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Edit Order
+                </button>
+              </div>
             </div>
           </div>
         </div>
