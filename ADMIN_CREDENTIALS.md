@@ -7,7 +7,7 @@ Your admin user has been created in MongoDB Atlas database.
 ### Login Credentials
 
 **Email:** `admin@maishaprintingbd.com`  
-**Password:** `MaishaAdmin@2024!`
+**Password:** `SkS^!$osN^333oIJ`
 
 ### Access URLs
 
@@ -21,7 +21,7 @@ Your admin user has been created in MongoDB Atlas database.
 
 ## Security Information
 
-- **User ID:** `6907cb81e4daea9276b77392`
+- **User ID:** `6914860a2289847f0e7761dd`
 - **Role:** Admin
 - **Database:** `maisha_printing`
 - **Collection:** `users`

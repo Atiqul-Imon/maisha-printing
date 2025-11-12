@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import ImageKitImage from './ImageKitImage';
+import CloudinaryImage from './CloudinaryImage';
 import { Product } from '@/types/product';
 import { ArrowRight } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        <ImageKitImage
+        <CloudinaryImage
           src={mainImage.url}
           alt={mainImage.alt || product.title}
           fill

@@ -5,10 +5,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'ik.imagekit.io',
-        pathname: '/dtqqmnmqo/**',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
       },
     ],
+    // Configure image qualities for Next.js 16 compatibility
+    qualities: [75, 80, 100],
+    // Disable Next.js image optimization for Cloudinary (Cloudinary handles optimization)
+    unoptimized: false,
   },
   webpack: (config, { isServer }) => {
     // Exclude MongoDB from client-side bundle

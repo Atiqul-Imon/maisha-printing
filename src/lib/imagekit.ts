@@ -3,10 +3,11 @@
  */
 
 // ImageKit Configuration
+// Note: Keys include prefixes as shown in ImageKit dashboard
 export const IMAGEKIT_CONFIG = {
   urlEndpoint: 'https://ik.imagekit.io/dtqqmnmqo',
-  publicKey: '3rFwnAaqLowbj9kSg+js94pt7s4=',
-  privateKey: 'CELMONWRfc5WrCRuwKsW3raUqw=', // Keep confidential - only for server-side operations
+  publicKey: 'public_CLF4Ai5TCEBySPQiJM0s+OB1tMw=',
+  privateKey: 'private_IhYXiQ//sA8551dx/Ll3yo5Wmys=', // Keep confidential - only for server-side operations
   imageKitId: 'dtqqmnmqo',
 } as const;
 

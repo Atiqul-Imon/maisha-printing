@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
-import ImageKitImage from './ImageKitImage';
+import CloudinaryImage from './CloudinaryImage';
 
 interface ImageUploadProps {
   onUploadComplete: (url: string) => void;
@@ -67,17 +67,23 @@ export default function ImageUpload({ onUploadComplete, existingUrl, onRemove }:
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        // Handle authentication errors
-        if (response.status === 401 || response.status === 403) {
-          setError(result.error || 'Your account cannot be authenticated. Please log in again.');
-          // Optionally redirect to login after a delay
+        const errorMsg = result.error || `Upload failed (${response.status})`;
+        setError(errorMsg);
+        console.error('Upload error:', {
+          status: response.status,
+          error: result.error,
+        });
+        
+        // Only redirect on 401 (our auth failed), not on 403 (Cloudinary auth failed)
+        if (response.status === 401) {
+          // Our authentication failed - redirect to login
           setTimeout(() => {
             window.location.href = '/admin/login';
-          }, 2000);
+          }, 3000);
         } else {
-          setError(result.error || 'Upload failed');
+          // Cloudinary or other error - keep preview so user can see the error
+          // Don't clear preview immediately
         }
-        setPreview(null);
         return;
       }
 
@@ -126,8 +132,8 @@ export default function ImageUpload({ onUploadComplete, existingUrl, onRemove }:
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
-            ) : preview.includes('ik.imagekit.io') ? (
-              <ImageKitImage
+            ) : preview.includes('res.cloudinary.com') ? (
+              <CloudinaryImage
                 src={preview}
                 alt="Uploaded image"
                 fill

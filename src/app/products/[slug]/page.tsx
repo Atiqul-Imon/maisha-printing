@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import ImageKitImage from '@/components/ImageKitImage';
+import CloudinaryImage from '@/components/CloudinaryImage';
 import { getProductBySlugClient, getAllProductsClient } from '@/lib/products';
 import { Product } from '@/types/product';
 import { ArrowLeft, Phone, Mail, CheckCircle } from 'lucide-react';
@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
             {/* Main Image */}
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100">
               {selectedImage && (
-                <ImageKitImage
+                <CloudinaryImage
                   src={selectedImage.url}
                   alt={selectedImage.alt || product.title}
                   fill
@@ -100,7 +100,7 @@ export default function ProductDetailPage() {
                         : 'border-gray-200 hover:border-green-400'
                     }`}
                   >
-                    <ImageKitImage
+                    <CloudinaryImage
                       src={image.url}
                       alt={image.alt || `${product.title} - Image ${index + 1}`}
                       fill
@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
                   className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                    <ImageKitImage
+                    <CloudinaryImage
                       src={relatedProduct.images[0]?.url || '/placeholder.jpg'}
                       alt={relatedProduct.title}
                       fill

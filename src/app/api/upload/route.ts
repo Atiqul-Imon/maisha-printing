@@ -1,46 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromCookie, verifySessionToken } from '@/lib/auth-custom';
-
-const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/dtqqmnmqo';
-const IMAGEKIT_PRIVATE_KEY = 'CELMONWRfc5WrCRuwKsW3raUqw=';
+import { getSessionFromRequest } from '@/lib/auth-api';
+import cloudinary from '@/lib/cloudinary';
+import { Readable } from 'stream';
 
 /**
- * Upload image to ImageKit using private key authentication
+ * Upload image to Cloudinary
  * Requires authentication
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication - try multiple methods
-    let session = await getSessionFromCookie();
-    
-    // Fallback: try reading cookie from request headers directly
-    if (!session) {
-      const cookieHeader = request.headers.get('cookie');
-      if (cookieHeader) {
-        const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-          const [key, value] = cookie.trim().split('=');
-          acc[key] = value;
-          return acc;
-        }, {} as Record<string, string>);
-        
-        const token = cookies['auth-token'];
-        if (token) {
-          session = await verifySessionToken(token);
-        }
-      }
-    }
+    // Check authentication using request-based method (more reliable in API routes)
+    const session = await getSessionFromRequest(request);
     
     // Debug logging
     console.log('Upload route - Session check:', {
       hasSession: !!session,
       hasUser: !!session?.user,
       userEmail: session?.user?.email,
+      userId: session?.user?.id,
     });
     
     if (!session || !session.user) {
-      console.error('Upload route - Authentication failed: No session or user');
+      console.error('Upload route - Authentication failed: No valid session');
       return NextResponse.json(
-        { success: false, error: 'Your account cannot be authenticated. Please log in again.' },
+        { 
+          success: false, 
+          error: 'Your account cannot be authenticated. Please log out and log in again.' 
+        },
         { status: 401 }
       );
     }
@@ -76,74 +62,119 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const fileName = `${folder}/${timestamp}-${randomString}-${sanitizedFileName}`;
+    const fileName = `${timestamp}-${randomString}-${sanitizedFileName}`;
 
-    // Convert file to base64
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64File = buffer.toString('base64');
+    // Convert file to buffer
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-    // Create form data for ImageKit upload
-    const imageKitFormData = new FormData();
-    imageKitFormData.append('file', base64File); // base64 encoded file
-    imageKitFormData.append('fileName', fileName);
-    imageKitFormData.append('useUniqueFileName', 'false'); // We're already creating unique names
-    imageKitFormData.append('folder', folder);
+    // Normalize folder path (remove leading/trailing slashes)
+    const normalizedFolder = folder.replace(/^\/+|\/+$/g, '');
 
-    // Upload to ImageKit using their upload API
-    // ImageKit expects authentication via Authorization header with private key
-    const authHeader = Buffer.from(`${IMAGEKIT_PRIVATE_KEY}:`).toString('base64');
-
-    const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authHeader}`,
-      },
-      body: imageKitFormData,
+    console.log('Cloudinary upload request:', {
+      fileName,
+      folder: normalizedFolder || '(root)',
+      fileSize: file.size,
+      fileType: file.type,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = 'Failed to upload image';
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.message || errorJson.error || errorMessage;
-      } catch {
-        errorMessage = errorText || errorMessage;
+    // Convert buffer to stream for Cloudinary
+    const stream = Readable.from(fileBuffer);
+
+    // Upload to Cloudinary
+    try {
+      interface CloudinaryUploadResult {
+        public_id: string;
+        secure_url: string;
+        url: string;
+        width: number;
+        height: number;
+        original_filename?: string;
+        format: string;
+        bytes: number;
       }
+
+      const uploadResult = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: normalizedFolder || undefined,
+            public_id: fileName.replace(/\.[^/.]+$/, ''), // Remove extension for public_id
+            resource_type: 'auto',
+            overwrite: false,
+            invalidate: true,
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else if (!result) {
+              reject(new Error('Cloudinary upload returned null result'));
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        stream.pipe(uploadStream);
+      });
+
+      console.log('Cloudinary upload success:', {
+        publicId: uploadResult.public_id,
+        url: uploadResult.secure_url,
+        width: uploadResult.width,
+        height: uploadResult.height,
+      });
+
+      // Return the Cloudinary response
+      return NextResponse.json({
+        success: true,
+        data: {
+          url: uploadResult.secure_url,
+          fileId: uploadResult.public_id,
+          name: uploadResult.original_filename || fileName,
+          filePath: uploadResult.public_id,
+          thumbnailUrl: uploadResult.secure_url,
+          width: uploadResult.width,
+          height: uploadResult.height,
+        },
+      });
+    } catch (uploadError: unknown) {
+      // Handle Cloudinary errors
+      console.error('Cloudinary upload error - Full details:', {
+        error: uploadError,
+        message: uploadError instanceof Error ? uploadError.message : 'Unknown error',
+        errorType: uploadError instanceof Error ? uploadError.constructor.name : typeof uploadError,
+      });
+
+      let errorMessage = 'Failed to upload image to Cloudinary';
       
-      console.error('ImageKit upload error:', errorMessage, response.status);
+      if (uploadError instanceof Error) {
+        errorMessage = uploadError.message;
+      } else {
+        errorMessage = String(uploadError) || 'Unknown error from Cloudinary';
+      }
+
       return NextResponse.json(
         { success: false, error: errorMessage },
-        { status: response.status || 500 }
+        { status: 500 }
       );
     }
-
-    const result = await response.json();
-
-    // Construct the full URL
-    const imageUrl = result.url || `${IMAGEKIT_URL_ENDPOINT}/${result.filePath}`;
-
-    // Return the ImageKit URL
-    return NextResponse.json({
-      success: true,
-      data: {
-        url: imageUrl,
-        fileId: result.fileId,
-        name: result.name || fileName,
-        filePath: result.filePath,
-        thumbnailUrl: result.thumbnailUrl || imageUrl,
-        width: result.width,
-        height: result.height,
-      },
-    });
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Error uploading image - Full error details:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Unknown error occurred during image upload';
+    
     return NextResponse.json(
-      { success: false, error: `Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { 
+        success: false, 
+        error: `Failed to upload image: ${errorMessage}` 
+      },
       { status: 500 }
     );
   }
 }
-
