@@ -4,12 +4,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product } from '@/types/product';
 import { Order, OrderSummary } from '@/types/order';
-import { Plus, Edit, Trash2, Eye, Save, X, LogOut, User, Loader2, GripVertical, Package, TrendingUp, CheckCircle, AlertCircle, Search, Filter, ShoppingCart, DollarSign, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Loader2, GripVertical, Package, TrendingUp, CheckCircle, AlertCircle, Search, Filter, ShoppingCart, DollarSign, Clock, Eye } from 'lucide-react';
 import CloudinaryImage from '@/components/CloudinaryImage';
 import ImageUpload from '@/components/ImageUpload';
 import DraggableProductList from '@/components/DraggableProductList';
 import OrderForm from '@/components/OrderForm';
 import OrderList from '@/components/OrderList';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminHeader from '@/components/admin/AdminHeader';
 import { generateSlug } from '@/lib/slug';
 
 interface User {
@@ -31,6 +33,34 @@ export default function AdminPanel() {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('products');
+
+  // Handle hash-based navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash === 'orders') {
+        setActiveTab('orders');
+      } else if (hash === 'products' || hash === '') {
+        setActiveTab('products');
+      }
+    };
+
+    // Check initial hash
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update URL hash when tab changes
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      window.location.hash = 'orders';
+    } else {
+      window.location.hash = 'products';
+    }
+  }, [activeTab]);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
@@ -456,7 +486,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 animate-in slide-in-from-top-5 ${
@@ -477,112 +507,66 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* User Info */}
-            {user && (
-              <div className="flex items-center space-x-3 px-4 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm">
-                <div className="p-1.5 bg-green-100 rounded-lg">
-                  <User className="h-4 w-4 text-green-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900">{user.name || user.email}</p>
-                  <p className="text-xs text-gray-500">{user.role || 'Admin'}</p>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900 px-4 py-2.5 rounded-xl hover:bg-gray-100 transition-all duration-200 font-medium text-sm border border-gray-200"
-              >
-                <Eye className="h-4 w-4 inline mr-2" />
-                View Site
-              </button>
-              
-              <button
-                onClick={handleLogout}
-                className="text-red-600 hover:text-red-700 px-4 py-2.5 rounded-xl hover:bg-red-50 transition-all duration-200 flex items-center font-medium text-sm border border-red-200"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </button>
-              
-              {activeTab === 'products' && (
-                <button
-                  onClick={() => {
-                    setShowForm(true);
-                    setEditingProduct(null);
-                    setFormData({
-                      title: '',
-                      shortDescription: '',
-                      longDescription: '',
-                      category: 'service',
-                      subcategory: '',
-                      slug: '',
-                      featured: false,
-                      price: undefined,
-                      currency: 'BDT',
-                      images: [{ url: '', alt: '' }],
-                    });
-                  }}
-                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add Product
-                </button>
-              )}
-              {activeTab === 'orders' && (
-                <button
-                  onClick={() => {
-                    setEditingOrder(null);
-                    setShowOrderForm(true);
-                  }}
-                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create Order
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Sidebar */}
+      {user && (
+        <AdminSidebar
+          user={user}
+          onLogout={handleLogout}
+          stats={{
+            totalProducts: stats.total,
+            totalOrders: orderSummary?.totalOrders,
+          }}
+        />
+      )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 mb-6 flex gap-2">
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-              activeTab === 'products'
-                ? 'bg-green-600 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <Package className="h-5 w-5" />
-            Products
-          </button>
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-              activeTab === 'orders'
-                ? 'bg-green-600 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            Orders
-          </button>
-        </div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:ml-64">
+        {/* Main Content */}
+        <main className="flex-1 p-6 lg:p-8">
+          {/* Page Header */}
+          {activeTab === 'products' && (
+            <AdminHeader
+              title="Products Management"
+              subtitle={`Manage your ${stats.total} products and services`}
+              action={{
+                label: 'Add Product',
+                onClick: () => {
+                  setShowForm(true);
+                  setEditingProduct(null);
+                  setFormData({
+                    title: '',
+                    shortDescription: '',
+                    longDescription: '',
+                    category: 'service',
+                    subcategory: '',
+                    slug: '',
+                    featured: false,
+                    price: undefined,
+                    currency: 'BDT',
+                    images: [{ url: '', alt: '' }],
+                  });
+                },
+              }}
+            />
+          )}
 
-        {/* Statistics Cards */}
-        {activeTab === 'products' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {activeTab === 'orders' && (
+            <AdminHeader
+              title="Orders Management"
+              subtitle={`Manage ${orderSummary?.totalOrders || 0} customer orders`}
+              action={{
+                label: 'Create Order',
+                onClick: () => {
+                  setEditingOrder(null);
+                  setShowOrderForm(true);
+                },
+              }}
+            />
+          )}
+
+          {/* Statistics Cards */}
+          {activeTab === 'products' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center justify-between">
               <div>
@@ -630,11 +614,11 @@ export default function AdminPanel() {
               </div>
             </div>
           </div>
-        </div>
-        )}
+            </div>
+          )}
 
-        {activeTab === 'orders' && orderSummary && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          {activeTab === 'orders' && orderSummary && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -697,38 +681,38 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Search and Filter Bar */}
-        {activeTab === 'products' && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products by title or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
-              />
-            </div>
-            <div className="relative sm:w-48">
-              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 appearance-none"
-              >
-                <option value="all">All Categories</option>
-                <option value="service">Services</option>
-                <option value="product">Products</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        )}
+              {/* Search and Filter Bar */}
+              {activeTab === 'products' && (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search products by title or description..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                      />
+                    </div>
+                    <div className="relative sm:w-48">
+                      <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 appearance-none"
+                      >
+                        <option value="all">All Categories</option>
+                        <option value="service">Services</option>
+                        <option value="product">Products</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-        {activeTab === 'orders' && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+              {activeTab === 'orders' && (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -760,113 +744,115 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Products Content */}
-        {activeTab === 'products' && (
-          <>
-            {/* Reorder Instructions */}
-            <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <GripVertical className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-blue-900 mb-1">
-                Drag and Drop to Reorder
-              </p>
-              <p className="text-xs text-blue-700">
-                Drag products by the grip icon to rearrange their display order on public pages. Changes are saved automatically.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Draggable Product List */}
-        {filteredProducts.length > 0 ? (
-          <DraggableProductList
-            products={filteredProducts}
-            onReorder={handleReorder}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ) : products.length > 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-semibold text-gray-900 mb-2">No products found</p>
-            <p className="text-sm text-gray-600">Try adjusting your search or filter criteria.</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-            <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-semibold text-gray-900 mb-2">No products yet</p>
-            <p className="text-sm text-gray-600 mb-6">Get started by adding your first product!</p>
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditingProduct(null);
-                setFormData({
-                  title: '',
-                  shortDescription: '',
-                  longDescription: '',
-                  category: 'service',
-                  subcategory: '',
-                  slug: '',
-                  featured: false,
-                  images: [{ url: '', alt: '' }],
-                });
-              }}
-              className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center mx-auto shadow-lg shadow-green-500/25"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Your First Product
-            </button>
-          </div>
-        )}
-          </>
-        )}
-
-        {/* Orders Content */}
-        {activeTab === 'orders' && (
-          <>
-            {ordersLoading ? (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Loading orders...</p>
+          {/* Products Content */}
+          {activeTab === 'products' && (
+            <>
+              {/* Reorder Instructions */}
+              <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <GripVertical className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-900 mb-1">
+                      Drag and Drop to Reorder
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      Drag products by the grip icon to rearrange their display order on public pages. Changes are saved automatically.
+                    </p>
+                  </div>
+                </div>
               </div>
-            ) : filteredOrders.length > 0 ? (
-              <OrderList
-                orders={filteredOrders}
-                onEdit={handleEditOrder}
-                onDelete={handleDeleteOrder}
-                onView={handleViewOrder}
-              />
-            ) : orders.length > 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-semibold text-gray-900 mb-2">No orders found</p>
-                <p className="text-sm text-gray-600">Try adjusting your search or filter criteria.</p>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-semibold text-gray-900 mb-2">No orders yet</p>
-                <p className="text-sm text-gray-600 mb-6">Get started by creating your first order!</p>
-                <button
-                  onClick={() => {
-                    setEditingOrder(null);
-                    setShowOrderForm(true);
-                  }}
-                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center mx-auto shadow-lg shadow-green-500/25"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create Your First Order
-                </button>
-              </div>
-            )}
-          </>
-        )}
 
-        {/* Old Grid View (Hidden) - Keeping for reference */}
-        {false && (
+              {/* Draggable Product List */}
+              {filteredProducts.length > 0 ? (
+                <DraggableProductList
+                  products={filteredProducts}
+                  onReorder={handleReorder}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ) : products.length > 0 ? (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                  <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No products found</p>
+                  <p className="text-sm text-gray-600">Try adjusting your search or filter criteria.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                  <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No products yet</p>
+                  <p className="text-sm text-gray-600 mb-6">Get started by adding your first product!</p>
+                  <button
+                    onClick={() => {
+                      setShowForm(true);
+                      setEditingProduct(null);
+                      setFormData({
+                        title: '',
+                        shortDescription: '',
+                        longDescription: '',
+                        category: 'service',
+                        subcategory: '',
+                        slug: '',
+                        featured: false,
+                        price: undefined,
+                        currency: 'BDT',
+                        images: [{ url: '', alt: '' }],
+                      });
+                    }}
+                    className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center mx-auto shadow-lg shadow-green-500/25"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Your First Product
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Orders Content */}
+          {activeTab === 'orders' && (
+            <>
+              {ordersLoading ? (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                  <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-600">Loading orders...</p>
+                </div>
+              ) : filteredOrders.length > 0 ? (
+                <OrderList
+                  orders={filteredOrders}
+                  onEdit={handleEditOrder}
+                  onDelete={handleDeleteOrder}
+                  onView={handleViewOrder}
+                />
+              ) : orders.length > 0 ? (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                  <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No orders found</p>
+                  <p className="text-sm text-gray-600">Try adjusting your search or filter criteria.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                  <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No orders yet</p>
+                  <p className="text-sm text-gray-600 mb-6">Get started by creating your first order!</p>
+                  <button
+                    onClick={() => {
+                      setEditingOrder(null);
+                      setShowOrderForm(true);
+                    }}
+                    className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center mx-auto shadow-lg shadow-green-500/25"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create Your First Order
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Old Grid View (Hidden) - Keeping for reference */}
+          {false && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
             <div
@@ -926,8 +912,9 @@ export default function AdminPanel() {
               </div>
             </div>
           ))}
-        </div>
-        )}
+          </div>
+          )}
+        </main>
       </div>
 
       {/* Form Modal */}

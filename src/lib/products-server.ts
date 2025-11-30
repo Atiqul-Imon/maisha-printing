@@ -42,14 +42,14 @@ async function _getAllProductsUncached(): Promise<Product[]> {
 
 /**
  * Get all products from MongoDB (Server-side only)
- * Cached for 60 seconds to improve performance
+ * Cached for 30 seconds to improve performance and ensure fresh data
  */
 export async function getAllProducts(): Promise<Product[]> {
   return unstable_cache(
     async () => _getAllProductsUncached(),
     ['all-products'],
     {
-      revalidate: 60, // Revalidate every 60 seconds
+      revalidate: 30, // Revalidate every 30 seconds for fresher data
       tags: ['products'],
     }
   )();

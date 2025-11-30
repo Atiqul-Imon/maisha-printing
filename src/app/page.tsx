@@ -4,8 +4,15 @@ import { getAllProducts } from '@/lib/products-server';
 import ProductCard from '@/components/ProductCard';
 import { testimonials } from '@/data/testimonials';
 
+export const revalidate = 30; // Revalidate this page every 30 seconds
+
 export default async function Home() {
   const allProducts = await getAllProducts();
+  
+  // Debug: Log product count (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Homepage] Fetched ${allProducts.length} products`);
+  }
 
   return (
     <div className="min-h-screen">
@@ -77,11 +84,17 @@ export default async function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-            {allProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {allProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">No products available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+              {allProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
