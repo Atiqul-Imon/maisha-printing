@@ -51,11 +51,11 @@ export default function NotFound() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <Link
-              href="/services"
+              href="/"
               className="text-green-100 hover:text-white transition-colors duration-200 flex items-center justify-center group"
             >
               <Search className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-              Our Services
+              Our Products
             </Link>
             <Link
               href="/about"
@@ -72,11 +72,11 @@ export default function NotFound() {
               Contact Us
             </Link>
             <Link
-              href="/services/t-shirt"
+              href="/cart"
               className="text-green-100 hover:text-white transition-colors duration-200 flex items-center justify-center group"
             >
               <Search className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-              T-Shirt Printing
+              Shopping Cart
             </Link>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
-import { services, quickLinks } from '@/data/navigation';
+import { quickLinks } from '@/data/navigation';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -40,17 +40,17 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Services */}
+          {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Our Services</h4>
+            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {services.slice(0, 6).map((service) => (
-                <li key={service.name}>
+              {quickLinks.slice(0, 6).map((link) => (
+                <li key={link.name}>
                   <Link 
-                    href={service.href}
+                    href={link.href}
                       className="text-gray-300 hover:text-green-400 text-sm transition-colors"
                   >
-                    {service.name}
+                    {link.name}
                   </Link>
                 </li>
               ))}

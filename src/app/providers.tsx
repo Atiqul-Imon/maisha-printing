@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { CartProvider } from '@/context/CartContext';
 
 /**
  * Providers Component
@@ -10,6 +11,10 @@ import { ReactNode } from 'react';
  * instead of NextAuth, so no session provider is needed.
  */
 export default function Providers({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <CartProvider>
+      {children}
+    </CartProvider>
+  );
 }
 

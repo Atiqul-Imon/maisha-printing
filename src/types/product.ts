@@ -19,6 +19,8 @@ export interface Product {
   images: ProductImage[];
   featured: boolean;
   slug: string;
+  price?: number; // Product price in BDT
+  currency?: string; // Currency code (default: 'BDT')
   metaTitle?: string;
   metaDescription?: string;
   order?: number; // For drag-and-drop reordering

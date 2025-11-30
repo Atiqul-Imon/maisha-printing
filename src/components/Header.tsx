@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import { mainNavigation, services } from '@/data/navigation';
+import { Menu, X, ShoppingCart } from 'lucide-react';
+import { mainNavigation } from '@/data/navigation';
+import CartIcon from './CartIcon';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,29 +41,7 @@ export default function Header() {
                 </Link>
               ))}
               
-              {/* Services Dropdown */}
-              <div className="relative group">
-                <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200 flex items-center">
-                  Services
-                  <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div className="absolute left-0 mt-2 w-64 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-2">
-                    {services.map((service) => (
-                      <Link
-                        key={service.name}
-                        href={service.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
-                      >
-                        {service.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
+              <CartIcon />
               <Link
                 href="/contact"
                 className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
@@ -99,25 +78,16 @@ export default function Header() {
                 </Link>
               ))}
 
-              {/* Mobile Services */}
-              <div className="pt-4 border-t border-gray-100">
-                <div className="text-gray-900 px-4 py-2 text-base font-bold mb-2">Our Services</div>
-                <div className="space-y-1">
-                  {services.map((service) => (
-                    <Link
-                      key={service.name}
-                      href={service.href}
-                      className="text-gray-600 hover:text-green-600 block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {service.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
               {/* Mobile CTA */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-100 space-y-2">
+                <Link
+                  href="/cart"
+                  className="flex items-center justify-center gap-2 w-full bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-semibold text-center hover:bg-gray-200 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  View Cart
+                </Link>
                 <Link
                   href="/contact"
                   className="block w-full bg-green-600 text-white px-4 py-3 rounded-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200"

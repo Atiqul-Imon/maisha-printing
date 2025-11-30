@@ -89,6 +89,8 @@ export default function AdminPanel() {
     subcategory: '',
     slug: '',
     featured: false,
+    price: undefined,
+    currency: 'BDT',
     images: [{ url: '', alt: '' }],
   });
 
@@ -522,6 +524,8 @@ export default function AdminPanel() {
                       subcategory: '',
                       slug: '',
                       featured: false,
+                      price: undefined,
+                      currency: 'BDT',
                       images: [{ url: '', alt: '' }],
                     });
                   }}
@@ -1092,6 +1096,47 @@ export default function AdminPanel() {
                           <span className="text-xs text-gray-500">Highlight on homepage</span>
                         </div>
                       </label>
+                    </div>
+                  </div>
+
+                  {/* Price Field */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Price (BDT)
+                        <span className="text-gray-400 font-normal ml-2">(Optional - leave empty for &quot;Contact for pricing&quot;)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.price || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData({
+                            ...formData,
+                            price: value === '' ? undefined : parseFloat(value) || undefined,
+                          });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white"
+                        placeholder="Enter price in BDT (e.g., 1500)"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Products without price will show &quot;Contact for pricing&quot; and cannot be added to cart.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Currency
+                      </label>
+                      <select
+                        value={formData.currency || 'BDT'}
+                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white"
+                      >
+                        <option value="BDT">BDT (৳)</option>
+                        <option value="USD">USD ($)</option>
+                      </select>
                     </div>
                   </div>
                 </div>

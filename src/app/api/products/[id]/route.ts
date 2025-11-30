@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { getSessionFromCookie } from '@/lib/auth-custom';
 import { revalidateTag } from 'next/cache';
 import { generateSlug, generateUniqueSlug } from '@/lib/slug';
+import { Product } from '@/types/product';
 
 // GET - Fetch single product by ID
 export async function GET(
@@ -116,11 +117,26 @@ export async function PUT(
     }
 
     // Update product
-    const updateData = {
+    const updateData: Partial<Product> & { updatedAt: string } = {
       ...body,
       slug: finalSlug,
       updatedAt: new Date().toISOString(),
     };
+
+    // Handle price field - convert to number or undefined
+    if (body.price !== undefined) {
+      if (body.price === null || body.price === '') {
+        updateData.price = undefined;
+      } else {
+        const priceValue = parseFloat(body.price);
+        updateData.price = isNaN(priceValue) ? undefined : priceValue;
+      }
+    }
+
+    // Ensure currency is set (default to BDT)
+    if (body.currency !== undefined) {
+      updateData.currency = body.currency || 'BDT';
+    }
 
     await collection.updateOne(
       { _id: new ObjectId(params.id) },

@@ -30,10 +30,10 @@ export default async function Home() {
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
-                  href="/services"
+                  href="/#products"
                   className="border-2 border-white text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-green-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
-                  View Services
+                  View Products
                 </Link>
               </div>
             </div>

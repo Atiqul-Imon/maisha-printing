@@ -4,7 +4,6 @@ import { memo } from 'react';
 import Link from 'next/link';
 import CloudinaryImage from './CloudinaryImage';
 import { Product } from '@/types/product';
-import { ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -29,18 +28,11 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
         />
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">
+      {/* Title Only */}
+      <div className="p-4 lg:p-6">
+        <h3 className="text-lg lg:text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
           {product.title}
         </h3>
-        <p className="text-gray-600 text-sm lg:text-base leading-relaxed mb-4 line-clamp-3">
-          {product.shortDescription}
-        </p>
-        <div className="flex items-center text-green-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
-          <span>View Details</span>
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </div>
       </div>
     </Link>
   );

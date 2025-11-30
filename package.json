@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed-database.ts",
+    "seed-products": "tsx scripts/seed-products.ts",
     "create-admin": "tsx scripts/create-admin-user.ts",
     "verify-admin": "tsx scripts/verify-admin-credentials.ts",
     "reset-db": "tsx scripts/reset-database.ts",

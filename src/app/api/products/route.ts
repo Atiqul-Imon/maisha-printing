@@ -113,6 +113,8 @@ export async function POST(request: NextRequest) {
       slug: finalSlug,
       featured: body.featured || false,
       images: body.images || [],
+      price: body.price !== undefined && body.price !== null && body.price !== '' ? parseFloat(body.price) : undefined,
+      currency: body.currency || 'BDT',
       metaTitle: body.metaTitle,
       metaDescription: body.metaDescription,
       order: body.order !== undefined ? body.order : nextOrder,
