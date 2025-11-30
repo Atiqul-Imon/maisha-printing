@@ -132,7 +132,7 @@ export default function AdminSidebar({ user, onLogout, stats }: AdminSidebarProp
       {/* Sidebar */}
       <aside
         className={`
-          fixed lg:sticky top-0 left-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white z-40
+          fixed lg:fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white z-40
           transform transition-transform duration-300 ease-in-out
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           flex flex-col shadow-2xl

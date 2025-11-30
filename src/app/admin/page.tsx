@@ -486,7 +486,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 animate-in slide-in-from-top-5 ${
@@ -520,9 +520,9 @@ export default function AdminPanel() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 overflow-hidden">
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
           {/* Page Header */}
           {activeTab === 'products' && (
             <AdminHeader
