@@ -32,35 +32,20 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  // Simple state-based tab management - no hash navigation needed
   const [activeTab, setActiveTab] = useState<TabType>('products');
 
-  // Handle hash-based navigation
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.substring(1);
-      if (hash === 'orders') {
-        setActiveTab('orders');
-      } else if (hash === 'products' || hash === '') {
-        setActiveTab('products');
+  // Handle tab change from sidebar
+  const handleTabChange = useCallback((tab: TabType) => {
+    setActiveTab(tab);
+    // Scroll to top of main content area smoothly
+    setTimeout(() => {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    };
-
-    // Check initial hash
-    handleHashChange();
-
-    // Listen for hash changes
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    }, 100);
   }, []);
-
-  // Update URL hash when tab changes
-  useEffect(() => {
-    if (activeTab === 'orders') {
-      window.location.hash = 'orders';
-    } else {
-      window.location.hash = 'products';
-    }
-  }, [activeTab]);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
@@ -512,6 +497,8 @@ export default function AdminPanel() {
         <AdminSidebar
           user={user}
           onLogout={handleLogout}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
           stats={{
             totalProducts: stats.total,
             totalOrders: orderSummary?.totalOrders,

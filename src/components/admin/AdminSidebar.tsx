@@ -1,18 +1,17 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Package, 
   ShoppingCart, 
-  LayoutDashboard, 
   LogOut, 
-  Eye, 
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface AdminSidebarProps {
   user: {
@@ -21,6 +20,8 @@ interface AdminSidebarProps {
     role: string;
   };
   onLogout: () => void;
+  activeTab?: 'products' | 'orders';
+  onTabChange?: (tab: 'products' | 'orders') => void;
   stats?: {
     totalProducts?: number;
     totalOrders?: number;
@@ -36,70 +37,36 @@ interface NavItem {
   onClick?: () => void;
 }
 
-export default function AdminSidebar({ user, onLogout, stats }: AdminSidebarProps) {
+export default function AdminSidebar({ user, onLogout, activeTab = 'products', onTabChange, stats }: AdminSidebarProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [currentHash, setCurrentHash] = useState<string>('');
-
-  // Sync with hash changes
-  useEffect(() => {
-    const updateHash = () => {
-      setCurrentHash(window.location.hash.substring(1));
-    };
-    updateHash();
-    window.addEventListener('hashchange', updateHash);
-    return () => window.removeEventListener('hashchange', updateHash);
-  }, []);
 
   const navItems: NavItem[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      href: '/admin',
-    },
     {
       id: 'products',
       label: 'Products',
       icon: Package,
-      href: '/admin#products',
       badge: stats?.totalProducts,
+      onClick: () => onTabChange?.('products'),
     },
     {
       id: 'orders',
       label: 'Orders',
       icon: ShoppingCart,
-      href: '/admin#orders',
       badge: stats?.totalOrders,
+      onClick: () => onTabChange?.('orders'),
     },
   ];
 
   const isActive = (item: NavItem) => {
-    if (item.href === '/admin') {
-      return pathname === '/admin' && (!currentHash || currentHash === 'products');
-    }
-    if (item.href?.startsWith('#')) {
-      const hash = item.href.substring(1);
-      return currentHash === hash || (hash === 'products' && !currentHash);
-    }
-    return pathname?.includes(item.id);
+    return item.id === activeTab;
   };
 
   const handleNavClick = (item: NavItem) => {
     if (item.onClick) {
       item.onClick();
     } else if (item.href) {
-      if (item.href.startsWith('#')) {
-        // Handle hash navigation
-        const hash = item.href.substring(1);
-        if (typeof window !== 'undefined') {
-          window.location.hash = hash;
-          setCurrentHash(hash);
-        }
-      } else {
-        router.push(item.href);
-      }
+      router.push(item.href);
     }
     setIsMobileOpen(false);
   };
