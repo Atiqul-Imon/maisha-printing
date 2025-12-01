@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Minus, ShoppingCart, Check } from 'lucide-react';
+import { Plus, Minus, Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/currency';
@@ -129,7 +129,6 @@ export default function AddToCartButton({ product, onAdd }: AddToCartButtonProps
           </>
         ) : (
           <>
-            <ShoppingCart className="h-5 w-5" />
             Add to Cart - {formatCurrency(product.price! * quantity, product.currency)}
           </>
         )}

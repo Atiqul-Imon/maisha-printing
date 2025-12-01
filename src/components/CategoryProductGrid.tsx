@@ -20,7 +20,7 @@ export default function CategoryProductGrid({ products }: CategoryProductGridPro
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
       {products.map((product) => {
         const hasImage = product.images && product.images.length > 0;
         const primaryImage = product.images[0];
@@ -44,13 +44,6 @@ export default function CategoryProductGrid({ products }: CategoryProductGridPro
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <span className="text-gray-400 text-sm">No Image</span>
-                  </div>
-                )}
-                {product.featured && (
-                  <div className="absolute top-3 right-3">
-                    <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                      Featured
-                    </span>
                   </div>
                 )}
               </div>

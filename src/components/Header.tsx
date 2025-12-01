@@ -44,17 +44,15 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-6">
-              {mainNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {/* Home Button */}
+              <Link
+                href="/"
+                className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              >
+                Home
+              </Link>
               
-              {/* Categories Dropdown */}
+              {/* Categories Dropdown - Right after Home */}
               <div 
                 className="relative pb-2"
                 onMouseEnter={() => {
@@ -93,6 +91,17 @@ export default function Header() {
                 )}
               </div>
               
+              {/* Rest of Navigation Items (About, Contact) */}
+              {mainNavigation.filter(item => item.name !== 'Home').map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+                >
+                  {item.name}
+                </Link>
+              ))}
+              
               <CartIcon />
               <Link
                 href="/contact"
@@ -119,19 +128,17 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-4 pt-4 pb-6 space-y-2 bg-white border-t border-gray-100 shadow-lg">
-              {mainNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-green-600 block px-4 py-3 text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {/* Home Button */}
+              <Link
+                href="/"
+                className="text-gray-700 hover:text-green-600 block px-4 py-3 text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
 
-              {/* Categories Section */}
-              <div className="pt-2 border-t border-gray-100">
+              {/* Categories Section - Right after Home */}
+              <div className="border-t border-gray-100">
                 <div className="px-4 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Categories
                 </div>
@@ -146,6 +153,18 @@ export default function Header() {
                   </Link>
                 ))}
               </div>
+
+              {/* Rest of Navigation Items (About, Contact) */}
+              {mainNavigation.filter(item => item.name !== 'Home').map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-700 hover:text-green-600 block px-4 py-3 text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
 
               {/* Mobile CTA */}
               <div className="pt-4 border-t border-gray-100 space-y-2">
