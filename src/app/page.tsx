@@ -8,11 +8,6 @@ export const revalidate = 30; // Revalidate this page every 30 seconds
 
 export default async function Home() {
   const allProducts = await getAllProducts();
-  
-  // Debug: Log product count (remove in production)
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Homepage] Fetched ${allProducts.length} products`);
-  }
 
   return (
     <div className="min-h-screen">

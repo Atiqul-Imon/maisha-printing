@@ -1,0 +1,13 @@
+# Robots.txt for Maisha Printing
+User-agent: *
+Allow: /
+
+# Disallow admin panel
+Disallow: /admin/
+
+# Disallow API routes
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://maishaprinting.com/sitemap.xml
+

@@ -15,19 +15,35 @@ export async function generateStaticParams() {
   }));
 }
 
+export const revalidate = 60; // Revalidate category pages every 60 seconds
+
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { slug } = await params;
   const category = getCategoryBySlug(slug);
 
   if (!category) {
     return {
-      title: 'Category Not Found',
+      title: 'Category Not Found - Maisha Printing',
+      description: 'The category you are looking for could not be found.',
+      robots: 'noindex, nofollow',
     };
   }
 
   return {
     title: `${category.name} - Maisha Printing`,
-    description: category.description || `Browse our ${category.name} collection`,
+    description: category.description || `Browse our ${category.name} collection. Professional printing services in Bangladesh.`,
+    keywords: `${category.name}, printing services, Bangladesh, ${category.name.toLowerCase().replace(/\s+/g, ', ')}`,
+    openGraph: {
+      title: `${category.name} - Maisha Printing`,
+      description: category.description || `Browse our ${category.name} collection`,
+      url: `https://maishaprinting.com/categories/${slug}`,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${category.name} - Maisha Printing`,
+      description: category.description || `Browse our ${category.name} collection`,
+    },
   };
 }
 
