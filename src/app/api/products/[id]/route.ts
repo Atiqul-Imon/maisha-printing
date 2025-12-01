@@ -133,10 +133,8 @@ export async function PUT(
       }
     }
 
-    // Ensure currency is set (default to BDT)
-    if (body.currency !== undefined) {
-      updateData.currency = body.currency || 'BDT';
-    }
+    // Always set currency to BDT
+    updateData.currency = 'BDT';
 
     await collection.updateOne(
       { _id: new ObjectId(params.id) },
