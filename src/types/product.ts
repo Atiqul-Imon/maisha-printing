@@ -16,6 +16,7 @@ export interface Product {
   longDescription: string;
   category: 'service' | 'product';
   subcategory?: string;
+  categorySlug?: string; // Link to a category page (e.g., 'id-card-accessories')
   images: ProductImage[];
   featured: boolean;
   slug: string;

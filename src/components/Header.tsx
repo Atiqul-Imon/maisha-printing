@@ -1,13 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X, ShoppingCart, ChevronDown } from 'lucide-react';
 import { mainNavigation } from '@/data/navigation';
+import { getAllCategories } from '@/data/categories';
 import CartIcon from './CartIcon';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const categories = getAllCategories();
+  const categoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (categoryTimeoutRef.current) {
+        clearTimeout(categoryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
@@ -30,7 +43,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-10 flex items-baseline space-x-6">
               {mainNavigation.map((item) => (
                 <Link
                   key={item.name}
@@ -40,6 +53,45 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Categories Dropdown */}
+              <div 
+                className="relative pb-2"
+                onMouseEnter={() => {
+                  if (categoryTimeoutRef.current) {
+                    clearTimeout(categoryTimeoutRef.current);
+                    categoryTimeoutRef.current = null;
+                  }
+                  setIsCategoriesOpen(true);
+                }}
+                onMouseLeave={() => {
+                  categoryTimeoutRef.current = setTimeout(() => {
+                    setIsCategoriesOpen(false);
+                  }, 150); // Small delay to allow cursor movement
+                }}
+              >
+                <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200 flex items-center gap-1">
+                  Categories
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isCategoriesOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-64 z-50">
+                    <div className="bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                      {categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/categories/${category.slug}`}
+                          onClick={() => setIsCategoriesOpen(false)}
+                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               
               <CartIcon />
               <Link
@@ -77,6 +129,23 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+
+              {/* Categories Section */}
+              <div className="pt-2 border-t border-gray-100">
+                <div className="px-4 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  Categories
+                </div>
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/categories/${category.slug}`}
+                    className="text-gray-700 hover:text-green-600 block px-4 py-3 text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
 
               {/* Mobile CTA */}
               <div className="pt-4 border-t border-gray-100 space-y-2">

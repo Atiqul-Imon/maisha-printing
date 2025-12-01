@@ -13,6 +13,7 @@ import OrderList from '@/components/OrderList';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { generateSlug } from '@/lib/slug';
+import { getAllCategories } from '@/data/categories';
 
 interface User {
   id: string;
@@ -102,6 +103,7 @@ export default function AdminPanel() {
     longDescription: '',
     category: 'service',
     subcategory: '',
+    categorySlug: undefined,
     slug: '',
     featured: false,
     price: undefined,
@@ -254,6 +256,7 @@ export default function AdminPanel() {
           longDescription: '',
           category: 'service',
           subcategory: '',
+          categorySlug: undefined,
           slug: '',
           featured: false,
           images: [{ url: '', alt: '' }],
@@ -526,6 +529,7 @@ export default function AdminPanel() {
                     longDescription: '',
                     category: 'service',
                     subcategory: '',
+                    categorySlug: undefined,
                     slug: '',
                     featured: false,
                     price: undefined,
@@ -780,6 +784,7 @@ export default function AdminPanel() {
                         longDescription: '',
                         category: 'service',
                         subcategory: '',
+                        categorySlug: undefined,
                         slug: '',
                         featured: false,
                         price: undefined,
@@ -1047,6 +1052,30 @@ export default function AdminPanel() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Category Page
+                        <span className="text-gray-400 font-normal ml-2">(Optional)</span>
+                      </label>
+                      <select
+                        value={formData.categorySlug || ''}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          categorySlug: e.target.value || undefined 
+                        })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white"
+                      >
+                        <option value="">None - Don&apos;t link to category page</option>
+                        {getAllCategories().map((cat) => (
+                          <option key={cat.id} value={cat.slug}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Link this product to a category page (e.g., ID Card Accessories)
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Subcategory
                       </label>
                       <input
@@ -1057,20 +1086,22 @@ export default function AdminPanel() {
                         placeholder="Optional subcategory"
                       />
                     </div>
-                    <div className="flex items-end">
-                      <label className="flex items-center cursor-pointer p-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors w-full">
-                        <input
-                          type="checkbox"
-                          checked={formData.featured || false}
-                          onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                          className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-                        />
-                        <div className="ml-3">
-                          <span className="text-sm font-semibold text-gray-700 block">Featured</span>
-                          <span className="text-xs text-gray-500">Highlight on homepage</span>
-                        </div>
-                      </label>
-                    </div>
+                  </div>
+
+                  {/* Featured Checkbox */}
+                  <div className="flex items-center">
+                    <label className="flex items-center cursor-pointer p-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.featured || false}
+                        onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                      />
+                      <div className="ml-3">
+                        <span className="text-sm font-semibold text-gray-700 block">Featured</span>
+                        <span className="text-xs text-gray-500">Highlight on homepage</span>
+                      </div>
+                    </label>
                   </div>
 
                   {/* Price Field */}

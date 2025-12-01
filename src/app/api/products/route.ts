@@ -16,6 +16,12 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const excludeId = searchParams.get('exclude');
     const limit = searchParams.get('limit');
+    const categorySlug = searchParams.get('category');
+    
+    // Filter by category if specified
+    if (categorySlug) {
+      products = products.filter((p) => p.categorySlug === categorySlug);
+    }
     
     // Filter out excluded product if specified
     if (excludeId) {
@@ -110,6 +116,7 @@ export async function POST(request: NextRequest) {
       longDescription: body.longDescription || '',
       category: body.category || 'service',
       subcategory: body.subcategory || '',
+      categorySlug: body.categorySlug || undefined,
       slug: finalSlug,
       featured: body.featured || false,
       images: body.images || [],
