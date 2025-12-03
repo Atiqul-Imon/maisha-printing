@@ -36,12 +36,12 @@ export default function Header() {
               className="flex items-center focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none outline-none border-none"
               style={{ outline: 'none', border: 'none' }}
             >
-              <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+              <div className="relative w-40 h-40 md:w-48 md:h-48 flex items-center justify-center">
                 <Image
                   src="/Logo.png"
                   alt="Maisha Printing Logo"
-                  width={160}
-                  height={160}
+                  width={192}
+                  height={192}
                   className="object-contain"
                   priority
                 />
