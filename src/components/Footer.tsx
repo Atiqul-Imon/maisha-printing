@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 import { quickLinks } from '@/data/navigation';
 
@@ -12,8 +13,14 @@ export default function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <Image
+                  src="/Logo.png"
+                  alt="Maisha Printing Logo"
+                  width={64}
+                  height={64}
+                  className="object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-xl font-serif font-bold">Maisha Printing</h3>

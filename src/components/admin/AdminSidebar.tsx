@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Package, 
   ShoppingCart, 
@@ -108,8 +109,14 @@ export default function AdminSidebar({ user, onLogout, activeTab = 'products', o
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-700">
           <Link href="/admin" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">M</span>
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <Image
+                src="/Logo.png"
+                alt="Maisha Printing Logo"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold text-white">Maisha Printing</h1>

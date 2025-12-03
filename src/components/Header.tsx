@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, ShoppingCart, ChevronDown } from 'lucide-react';
 import { mainNavigation } from '@/data/navigation';
 import { getAllCategories } from '@/data/categories';
@@ -31,8 +32,15 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2 md:space-x-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl md:text-2xl">M</span>
+              <div className="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                <Image
+                  src="/Logo.png"
+                  alt="Maisha Printing Logo"
+                  width={128}
+                  height={128}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Maisha Printing</h1>
