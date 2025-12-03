@@ -25,6 +25,13 @@ export const metadata: Metadata = {
   creator: "Maisha Printing",
   publisher: "Maisha Printing",
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
   openGraph: {
     title: "Maisha Printing - Professional Printing Services in Bangladesh",
     description: "Professional printing services in Bangladesh. We print t-shirts, glass, calendars, ID cards, ribbons, stickers, visiting cards, flyers, brochures and more for businesses.",

@@ -31,20 +31,20 @@ export default function Header() {
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center space-x-2 md:space-x-3">
-              <div className="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+            <Link 
+              href="/" 
+              className="flex items-center focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none outline-none border-none"
+              style={{ outline: 'none', border: 'none' }}
+            >
+              <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
                 <Image
                   src="/Logo.png"
                   alt="Maisha Printing Logo"
-                  width={128}
-                  height={128}
+                  width={160}
+                  height={160}
                   className="object-contain"
                   priority
                 />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Maisha Printing</h1>
-                <p className="text-xs md:text-sm text-gray-600 font-medium">Professional Printing Services</p>
               </div>
             </Link>
           </div>
